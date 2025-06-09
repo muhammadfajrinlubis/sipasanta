@@ -1,0 +1,203 @@
+<?php
+
+namespace App\Http\Controllers\Pegawai;
+
+use App\Models\Users;
+use App\Models\Sarana;
+use App\Models\Ruangan;
+use App\Models\Pengaduan;
+use Illuminate\Http\Request;
+
+use App\Events\NewPengaduanEvent;
+use Illuminate\Support\Facades\DB;
+use App\Http\Controllers\Controller;
+use Illuminate\Support\Facades\Auth;
+use Illuminate\Support\Facades\Log;
+use Illuminate\Support\Facades\Storage;
+
+class PengaduanController extends Controller
+{
+    public function __construct()
+    {
+        $this->middleware('auth');
+    }
+
+    public function read()
+    {
+        // Ambil data pengaduan yang hanya dibuat oleh user yang sedang login
+        $pengaduan = Pengaduan::with(['ruangan', 'sarana', 'userPengadu', 'userPetugas'])
+            ->where('id_user', auth()->user()->id) // Hanya pengaduan dari user yang login
+            ->orderBy('created_at', 'DESC') // Urutkan berdasarkan waktu pembuatan terbaru
+                            ->get();
+        return view('pegawai.pengaduan.index', compact('pengaduan'));
+    }
+
+    public function add(){
+        $ruangan = DB::table('ruangan')->orderBy('id','DESC')->get();
+        $sarana = DB::table('sarana')->orderBy('id','DESC')->get();
+        return view('pegawai.pengaduan.tambah',['ruangan'=>$ruangan,'sarana'=>$sarana]);
+    }
+
+    public function create(Request $request)
+    {
+        // Validasi data input
+        $request->validate([
+            'id_ruangan' => 'required|exists:ruangan,id',
+            'id_sarana' => 'required|exists:sarana,id',
+            'tgl_pengaduan' => 'required|date',
+            'deskripsi' => 'required|string|max:500',
+            'foto' => 'nullable|image|mimes:jpeg,png,jpg|max:2048',
+            'tipe' => 'required|in:Urgent,Routine,Maintenance,Repair',
+        ], [
+            'id_ruangan.required' => 'Ruangan harus dipilih.',
+            'id_sarana.required' => 'Sarana harus dipilih.',
+            'tgl_pengaduan.required' => 'Tanggal pengaduan wajib diisi.',
+            'deskripsi.required' => 'Deskripsi wajib diisi.',
+            'foto.image' => 'File foto harus berupa gambar.',
+            'tipe.in' => 'Tipe pengaduan tidak valid.',
+        ]);
+
+        // Simpan file foto jika ada
+        $foto = null;
+        if ($request->hasFile('foto')) {
+            $foto = $request->file('foto')->store('images', 'public');
+        }
+
+        // Data pengaduan
+        $pengaduanData = [
+            'id_ruangan' => $request->id_ruangan,
+            'id_sarana' => $request->id_sarana,
+            'tgl_pengaduan' => $request->tgl_pengaduan,
+            'deskripsi' => $request->deskripsi,
+            'foto' => $foto,
+            'id_petugas' => null, // Tidak menggunakan id_petugas
+            'id_user' => Auth::id(), // Mengambil id user dari yang login
+            'status' => 'Menunggu Persetujuan Oleh Admin', // Status awal
+            'tipe' => $request->tipe, // Tipe pengaduan
+            'created_at' => now(),
+            'updated_at' => now(),
+        ];
+
+        // Simpan data ke database dengan transaksi
+        try {
+            DB::beginTransaction();
+
+            // Insert data pengaduan
+            DB::table('pengaduan')->insert($pengaduanData);
+
+            // Kirim notifikasi real-time
+            // Kirim notifikasi real-time
+            event(new NewPengaduanEvent("Pengaduan baru", Auth::user()->name));
+
+
+            DB::commit();
+
+            return redirect('/pegawai/pengaduan')->with('success', 'Data pengaduan berhasil ditambahkan');
+        } catch (\Exception $e) {
+            DB::rollBack();
+
+            // Log error untuk debug
+            Log::error('Error saat menyimpan pengaduan: ', [
+                'error' => $e->getMessage(),
+                'data' => $pengaduanData,
+            ]);
+
+            return redirect('/pegawai/pengaduan')->with('error', 'Terjadi kesalahan saat menyimpan data. Silakan coba lagi.');
+        }
+    }
+
+
+public function detail($id)
+{
+    $pengaduan = Pengaduan::with(['ruangan', 'sarana', 'userPengadu', 'userPetugas', 'rating'])->find($id);
+    return view('pegawai.pengaduan.detail', compact('pengaduan'));
+}
+
+
+
+    public function delete($id)
+    {
+        $pengaduan = Pengaduan::findOrFail($id);
+
+        // Cek jika status pengaduan sudah 'Selesai', 'Sedang Diproses', atau 'Tidak Dapat Dikerjakan'
+        if (in_array($pengaduan->status, ['selesai', 'Dikerjakan Oleh Petugas', 'tidak_dapat_dikerjakan'])) {
+            return redirect('/pegawai/pengaduan')->with('error', 'Data pengaduan tidak dapat dihapus karena sudah dalam status Selesai atau Sedang Diproses.');
+        }
+
+        $pengaduan->delete();
+        return redirect('/pegawai/pengaduan')->with('error', 'Data pengaduan berhasil dihapus');
+    }
+
+
+    public function edit($id){
+        $pengaduan = Pengaduan::findOrFail($id);
+
+        // Cek jika status pengaduan sudah 'Selesai', 'Sedang Diproses', atau 'Tidak Dapat Dikerjakan'
+        if (in_array($pengaduan->status, ['selesai', 'Dikerjakan Oleh Petugas', 'tidak_dapat_dikerjakan'])) {
+            return redirect('/pegawai/pengaduan')->with('error', 'Data pengaduan tidak dapat diubah karena sudah dalam status Selesai atau Sedang Diproses.');
+        }
+
+        $ruangan = Ruangan::all();
+        $sarana = Sarana::all();
+        return view('pegawai.pengaduan.edit', compact('pengaduan', 'ruangan', 'sarana'));
+    }
+
+    public function update(Request $request, $id){
+        $pengaduan = Pengaduan::findOrFail($id);
+
+        // Cek jika status pengaduan sudah 'Selesai', 'Sedang Diproses', atau 'Tidak Dapat Dikerjakan'
+        if (in_array($pengaduan->status, ['selesai', 'Dikerjakan Oleh Petugas', 'tidak_dapat_dikerjakan'])) {
+            return redirect('/pegawai/pengaduan')->with('error', 'Data pengaduan tidak dapat diubah karena sudah dalam status Selesai atau Sedang Diproses.');
+        }
+
+        $pengaduan->id_ruangan = $request->id_ruangan;
+        $pengaduan->id_sarana = $request->id_sarana;
+        $pengaduan->tgl_pengaduan = $request->tgl_pengaduan;
+        $pengaduan->tipe = $request->tipe;
+        $pengaduan->deskripsi = $request->deskripsi;
+        $pengaduan->status = 'Menunggu Persetujuan Oleh Admin';
+
+        if ($request->hasFile('foto')) {
+            $file = $request->file('foto');
+            $fileName = time() . '.' . $file->getClientOriginalExtension();
+            $file->move(public_path('images'), $fileName);
+            $pengaduan->foto = $fileName;
+        }
+
+        $pengaduan->save();
+
+        return redirect('/pegawai/pengaduan')->with('success', 'Data pengaduan berhasil diperbarui');
+    }
+
+    public function store(Request $request, $pengaduanId){
+    // Validasi input dari request
+    $validated = $request->validate([
+        'nilai_rating' => 'required|integer|min:1|max:5',
+        'komentar' => 'nullable|string|max:1000',
+    ]);
+
+    // Ambil data pengaduan berdasarkan ID pengaduan
+    $pengaduan = DB::table('pengaduan')->where('id', $pengaduanId)->first();
+
+    // Periksa apakah pengaduan ditemukan dan memiliki id_petugas
+    if (!$pengaduan || !$pengaduan->id_petugas) {
+        return redirect()->back()->with('error', 'Pengaduan tidak ditemukan atau belum memiliki petugas.');
+    }
+
+    // Ambil ID petugas dari tabel pengaduan
+    $petugasId = $pengaduan->id_petugas;
+
+    // Masukkan rating ke dalam tabel rating_petugas menggunakan DB facade
+    DB::table('rating_petugas')->insert([
+        'id_pengaduan' => $pengaduanId,
+        'id_petugas' => $petugasId,
+        'nilai_rating' => $validated['nilai_rating'],
+        'komentar' => $validated['komentar'],
+        'created_at' => now(), // Set timestamp otomatis
+        'updated_at' => now(), // Set timestamp otomatis
+    ]);
+
+    // Redirect kembali dengan pesan sukses
+    return redirect()->back()->with('success', 'Rating berhasil dikirim!');
+    }
+}
