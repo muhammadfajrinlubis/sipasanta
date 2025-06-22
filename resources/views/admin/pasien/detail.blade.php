@@ -16,7 +16,7 @@
 </div>
 <!-- .row -->
 <div class="row">
-   <div class="col-md-12">
+   <div class="col-md-12 col-sm-12">
       <div class="widget">
          <header class="widget-header">
             <div class="pull-left">
@@ -32,7 +32,7 @@
          </header>
 
         <div class="card-body">
-            <div class="row mb-3">
+            <div class="row mb-6">
                 <div class="col-md-6">
                     <table class="table table-bordered">
                         <tr>
@@ -62,6 +62,14 @@
                         <tr>
                             <th>Tanggal Daftar</th>
                             <td>{{ $pasien->created_at->format('d M Y H:i') }}</td>
+                        </tr>
+                        <tr>
+                            <th>Ruangan</th>
+                            <td>{{ $pasien->ruangan->nama }}</td>
+                        </tr>
+                        <tr>
+                            <th>Kamar</th>
+                            <td>{{$pasien->kamar->nomor_kamar}}</td>
                         </tr>
                     </table>
                 </div>

@@ -5,6 +5,7 @@ namespace App\Http\Controllers\Admin;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\DB;
 use App\Http\Controllers\Controller;
+use Illuminate\Support\Facades\Hash;
 
 class PerawatController extends Controller
 {
@@ -55,5 +56,23 @@ class PerawatController extends Controller
         }
 
         return redirect('/admin/perawat')->with("success","Data Berhasil Ditambah !");
+    }
+
+    public function resetPassword($id)
+    {
+        // Ambil id_user dari tabel admin_perawat
+        $admin_perawat = DB::table('admin_perawat')->where('id', $id)->first();
+
+        if (!$admin_perawat) {
+            return redirect()->back()->with('error', 'Data admin_perawat tidak ditemukan');
+        }
+
+        // Update password user yang terkait
+        DB::table('users')->where('id', $admin_perawat->id_user)->update([
+            'password' => Hash::make('12345678'),
+            'updated_at' => now(),
+        ]);
+
+        return redirect()->back()->with('success', 'Password berhasil di-reset ke 12345678');
     }
 }

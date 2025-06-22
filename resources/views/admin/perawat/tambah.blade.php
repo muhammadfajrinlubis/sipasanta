@@ -1,13 +1,13 @@
 @extends('admin.layouts.app', [
-'activePage' => 'perawat',
+'activePage' => 'adminperawat',
 ])
 @section('content')
 <div class="row">
    <div class="col-md-12 col-sm-12">
       <div class="widget p-md clearfix">
          <div class="pull-left">
-            <h1 class="widget-title" style="font-size: 30px; margin-bottom: 5px;">Data perawat</h1>
-            <small class="text-color">Data User <span style="margin:0px 3px 0px 3px"> > </span> <a href="/admin/perawat">Data perawat</a> <span style="margin:0px 3px 0px 3px"> > </span> <a href="/admin/perawat/add">Tambah Data perawat</a></small>
+            <h1 class="widget-title" style="font-size: 30px; margin-bottom: 5px;">Data Perawat</h1>
+            <small class="text-color">Data User <span style="margin:0px 3px 0px 3px"> > </span> <a href="/admin/perawat">Data Perawat</a> <span style="margin:0px 3px 0px 3px"> > </span> <a href="/admin/perawat/add">Tambah Data Perawat</a></small>
          </div>
          <span class="pull-right fz-lg fw-500 counter"></span>
       </div>
@@ -21,7 +21,7 @@
          <header class="widget-header">
             <div class="pull-left">
                <h4 class="widget-title" style="font-size:24px;">
-                  <i class="glyphicon glyphicon-plus-sign"></i> Tambah Data perawat
+                  <i class="glyphicon glyphicon-plus-sign"></i> Tambah Data Perawat
                </h4>
             </div>
             <div class="pull-right">
@@ -50,28 +50,28 @@
                <div class="row">
                   <div class="col-md-6">
                      <div class="form-group">
-                        <label>NIP perawat<span class="text-danger">* </span></label>
-                        <input type="number" name="nip" autofocus class="form-control" placeholder="Masukkan NIP perawat .....">
+                        <label>NIP Perawat<span class="text-danger">* </span></label>
+                        <input type="number" name="nip" autofocus class="form-control" placeholder="Masukkan NIP perawat ....." required>
                      </div>
                   </div>
 
                   <div class="col-md-6">
                     <div class="form-group">
-                       <label>No HP perawat <span class="text-danger">* </span></label>
-                       <input type="number" name="no_hp" autofocus class="form-control" placeholder="Masukkan NO HP perawat .....">
+                       <label>No HP Perawat <span class="text-danger">* </span></label>
+                       <input type="number" name="no_hp" autofocus class="form-control" placeholder="Masukkan NO HP perawat ....." required>
                     </div>
                  </div>
 
                   <div class="col-md-6">
                      <div class="form-group">
-                        <label>Nama perawat<span class="text-danger">* </span></label>
-                        <input type="text" name="nama" autofocus class="form-control" placeholder="Masukkan Nama perawat .....">
+                        <label>Nama Perawat<span class="text-danger">* </span></label>
+                        <input type="text" name="nama" autofocus class="form-control" placeholder="Masukkan Nama perawat ....." required>
                      </div>
                   </div>
                   <div class="col-md-6">
                      <div class="form-group">
-                        <label>Jabatan perawat<span class="text-danger">* </span></label>
-                        <select class="form-control select2" name="id_jabatan">
+                        <label>Jabatan Perawat<span class="text-danger">* </span></label>
+                        <select class="form-control select2" name="id_jabatan" required>
                            <option value="">-- Pilih Jabatan --</option>
                            @foreach($jabatan as $data)
                            <option value="{{$data->id}}">{{$data->nama}}</option>

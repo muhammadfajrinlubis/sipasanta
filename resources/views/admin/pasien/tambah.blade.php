@@ -68,18 +68,20 @@
                 <form action="/admin/pasien/create" method="POST">
                     @csrf
 
-                    <div class="form-group">
-                        <label for="no_rm">No RM</label>
-                        <input type="number" class="form-control" id="no_rm" name="no_rm" required>
-                    </div>
+                   <div class="form-group">
+                    <label for="no_rm">No RM (Otomatis)<span class="text-danger">* </span></label>
+                    <input type="text" class="form-control" id="no_rm" name="no_rm"
+                        value="{{ old('no_rm', 'Akan diisi otomatis') }}"
+                        readonly disabled>
+                </div>
 
                     <div class="form-group">
-                        <label for="nama">Nama Pasien</label>
+                        <label for="nama">Nama Pasien<span class="text-danger">* </span></label>
                         <input type="text" class="form-control" id="nama" name="nama" required>
                     </div>
 
                     <div class="form-group">
-                        <label for="jenis_kelamin">Jenis Kelamin</label>
+                        <label for="jenis_kelamin">Jenis Kelamin<span class="text-danger">* </span></label>
                         <select class="form-control" id="jenis_kelamin" name="jenis_kelamin" required>
                             <option value="">-- Pilih Jenis Kelamin --</option>
                             <option value="L">Laki-laki</option>
@@ -88,22 +90,22 @@
                     </div>
 
                     <div class="form-group">
-                        <label for="tanggal_lahir">Tanggal Lahir</label>
+                        <label for="tanggal_lahir">Tanggal Lahir<span class="text-danger">* </span></label>
                         <input type="date" class="form-control" id="tanggal_lahir" name="tanggal_lahir" required>
                     </div>
 
                     <div class="form-group">
-                        <label for="alamat">Alamat</label>
+                        <label for="alamat">Alamat<span class="text-danger">* </span></label>
                         <textarea class="form-control" id="alamat" name="alamat" required></textarea>
                     </div>
 
                     <div class="form-group">
-                        <label for="no_telepon">No Telepon</label>
+                        <label for="no_telepon">No Telepon<span class="text-danger">* </span></label>
                         <input type="number" class="form-control" id="no_telepon" name="no_telepon" required>
                     </div>
 
                     <div class="form-group">
-                        <label for="ruangan_id">Ruangan</label>
+                        <label for="ruangan_id">Ruangan<span class="text-danger">* </span></label>
                         <select class="form-control" id="ruangan_id" name="ruangan_id" required>
                             <option value="">-- Pilih Ruangan --</option>
                             @foreach($ruangan as $r)
@@ -113,7 +115,7 @@
                     </div>
 
                     <div class="form-group">
-                        <label for="kamar_id">Kamar</label>
+                        <label for="kamar_id">Kamar<span class="text-danger">* </span></label>
                         <select class="form-control" id="kamar_id" name="kamar_id" required>
                             <option value="">-- Pilih Kamar --</option>
                             {{-- Data kamar akan di-load dinamis --}}
@@ -121,13 +123,13 @@
                     </div>
 
                     <div class="form-group">
-                        <label for="kendala">Kendala</label>
-                        <textarea class="form-control" id="kendala" name="kendala"></textarea>
+                        <label for="kendala">Kendala<span class="text-danger">* </span></label>
+                        <textarea class="form-control" id="kendala" name="kendala" required></textarea>
                     </div>
 
                     <div class="form-group">
-                        <label for="status">Status</label>
-                        <select class="form-control" id="status" name="status">
+                        <label for="status">Status<span class="text-danger">* </span></label>
+                        <select class="form-control" id="status" name="status" required>
                             <option value="rawat">Di Rawat</option>
                             <option value="pulang">Pulang</option>
                         </select>

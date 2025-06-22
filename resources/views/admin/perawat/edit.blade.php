@@ -1,5 +1,5 @@
 @extends('admin.layouts.app', [
-'activePage' => 'pegawai',
+'activePage' => 'adminpegawai',
 ])
 @section('content')
 <div class="row">

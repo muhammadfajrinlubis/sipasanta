@@ -49,7 +49,7 @@
 
                     <div class="form-group">
                         <label for="no_rm">No RM</label>
-                        <input type="number" class="form-control" id="no_rm" name="no_rm" value="{{ $pasien->no_rm }}" required>
+                        <input type="text" class="form-control" name="no_rm" value="{{ $pasien->no_rm }}" readonly>
                     </div>
 
                     <div class="form-group">
@@ -125,12 +125,17 @@
 <script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
 <script>
 $(document).ready(function() {
-    function loadKamar(ruanganId, selectedKamarId = null) {
+    function loadKamar(ruanganId, selectedKamarId = null, pasienId = null) {
         $('#kamar_id').empty().append('<option value="">-- Pilih Kamar --</option>');
 
         if (ruanganId) {
+            let url = `/admin/pasien/get-kamar/${ruanganId}`;
+            if (pasienId) {
+                url += `/${pasienId}`;
+            }
+
             $.ajax({
-                url: `/admin/pasien/get-kamar/${ruanganId}`,
+                url: url,
                 type: 'GET',
                 dataType: 'json',
                 success: function(response) {
@@ -149,12 +154,12 @@ $(document).ready(function() {
         }
     }
 
-    // Load kamar awal saat halaman dibuka
-    loadKamar($('#ruangan_id').val(), "{{ $pasien->kamar_id }}");
+    // Load kamar awal saat halaman dibuka (jika edit)
+    loadKamar($('#ruangan_id').val(), "{{ $pasien->kamar_id }}", "{{ $pasien->id }}");
 
-    // Reload saat ruangan diganti
+    // Reload saat ruangan diganti (tanpa pasienId karena bisa kosong saat create)
     $('#ruangan_id').on('change', function() {
-        loadKamar($(this).val());
+        loadKamar($(this).val(), null, "{{ $pasien->id ?? '' }}");
     });
 });
 </script>

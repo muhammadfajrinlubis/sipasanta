@@ -8,6 +8,7 @@ use Illuminate\Http\Request;
 use App\Imports\PegawaiImport;
 use Illuminate\Support\Facades\DB;
 use App\Http\Controllers\Controller;
+use Illuminate\Support\Facades\Hash;
 use Maatwebsite\Excel\Facades\Excel;
 
 class PegawaiController extends Controller
@@ -188,4 +189,23 @@ class PegawaiController extends Controller
 
         return $pdf->stream('Cetak Data '.$pegawai->nama.'.pdf');
     }
+
+    public function resetPassword($id)
+    {
+        // Ambil id_user dari tabel pegawai
+        $pegawai = DB::table('pegawai')->where('id', $id)->first();
+
+        if (!$pegawai) {
+            return redirect()->back()->with('error', 'Data pegawai tidak ditemukan');
+        }
+
+        // Update password user yang terkait
+        DB::table('users')->where('id', $pegawai->id_user)->update([
+            'password' => Hash::make('12345678'),
+            'updated_at' => now(),
+        ]);
+
+        return redirect()->back()->with('success', 'Password berhasil di-reset ke 12345678');
+    }
+
 }

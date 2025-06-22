@@ -51,27 +51,27 @@
                   <div class="col-md-6">
                      <div class="form-group">
                         <label>NIP Pegawai<span class="text-danger">* </span></label>
-                        <input type="number" name="nip" autofocus class="form-control" placeholder="Masukkan NIP Pegawai .....">
+                        <input type="number" name="nip" autofocus class="form-control" placeholder="Masukkan NIP Pegawai ....." required>
                      </div>
                   </div>
 
                   <div class="col-md-6">
                     <div class="form-group">
                        <label>No HP Pegawai <span class="text-danger">* </span></label>
-                       <input type="number" name="no_hp" autofocus class="form-control" placeholder="Masukkan NO HP Pegawai .....">
+                       <input type="number" name="no_hp" autofocus class="form-control" placeholder="Masukkan NO HP Pegawai ....." required>
                     </div>
                  </div>
 
                   <div class="col-md-6">
                      <div class="form-group">
                         <label>Nama Pegawai<span class="text-danger">* </span></label>
-                        <input type="text" name="nama" autofocus class="form-control" placeholder="Masukkan Nama Pegawai .....">
+                        <input type="text" name="nama" autofocus class="form-control" placeholder="Masukkan Nama Pegawai ....." required>
                      </div>
                   </div>
                   <div class="col-md-6">
                      <div class="form-group">
                         <label>Jabatan Pegawai<span class="text-danger">* </span></label>
-                        <select class="form-control select2" name="id_jabatan">
+                        <select class="form-control select2" name="id_jabatan" required>
                            <option value="">-- Pilih Jabatan --</option>
                            @foreach($jabatan as $data)
                            <option value="{{$data->id}}">{{$data->nama}}</option>

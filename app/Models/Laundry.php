@@ -19,6 +19,7 @@ class Laundry extends Model
         'berat',
         'biaya',
         'keterangan',
+        'siap_pada',
     ];
 
     // Relasi opsional jika Anda butuh
@@ -35,5 +36,5 @@ class Laundry extends Model
     {
         return $this->belongsTo(User::class, 'id_user');
     }
-    
+
 }

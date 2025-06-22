@@ -29,6 +29,7 @@ return new class extends Migration
             $table->float('berat')->nullable();
             $table->decimal('biaya', 10, 3)->nullable();
             $table->text('keterangan')->nullable();
+             $table->timestamp('siap_pada')->nullable();
 
             // Timestamps
             $table->timestamp('created_at')->useCurrent();
@@ -49,8 +50,7 @@ return new class extends Migration
     public function down()
     {
         Schema::table('laundry', function (Blueprint $table) {
-            // Menghapus foreign key sebelum tabel dihapus
-            $table->dropForeign(['id_user']);
+            $table->dropForeign(['id_pasien']);
             $table->dropForeign(['id_ruangan']);
         });
 

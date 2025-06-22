@@ -22,7 +22,7 @@ return new class extends Migration
             $table->text('deskripsi');
             $table->string('foto');
             $table->string('bukti_petugas')->nullable();
-            $table->unsignedBigInteger('id_petugas')->nullable();
+            $table->string('id_petugas')->nullable();
             $table->unsignedBigInteger('id_user');
             $table->string('status');
             $table->string('alasan')->nullable();
@@ -34,7 +34,6 @@ return new class extends Migration
             // Menambahkan relasi
             $table->foreign('id_ruangan')->references('id')->on('ruangan')->onDelete('cascade');
             $table->foreign('id_sarana')->references('id')->on('sarana')->onDelete('cascade');
-            $table->foreign('id_petugas')->references('id')->on('petugas')->onDelete('set null');
             $table->foreign('id_user')->references('id')->on('users')->onDelete('cascade');
         });
     }
@@ -48,7 +47,6 @@ return new class extends Migration
             // Menghapus foreign key sebelum menghapus tabel
             $table->dropForeign(['id_ruangan']);
             $table->dropForeign(['id_sarana']);
-            $table->dropForeign(['id_petugas']);
             $table->dropForeign(['id_user']);
         });
 

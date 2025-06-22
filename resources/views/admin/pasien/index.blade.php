@@ -100,6 +100,12 @@
                                         <button class="btn btn-secondary btn-sm" data-toggle="modal" data-target="#qrModal-{{ $data->id }}" title="QR Cepat">
                                             <i class="fa fa-qrcode"></i>
                                         </button>
+                                         {{-- Tombol Print QR --}}
+                                        <button class="btn btn-info btn-xs"
+                                            onclick="printQRCode('{{ route('pasien.showPublic', $data->id) }}', '{{ addslashes($data->nama) }}')"
+                                            title="Print QR">
+                                            <i class="fa fa-print"></i>
+                                        </button>
                                         {{-- Tombol Ubah Status dengan Modal --}}
                                         @if($data->status == 'rawat')
                                             <button type="button" class="btn btn-warning btn-xs" data-toggle="modal" data-target="#statusModal-{{ $data->id }}" title="Pulangkan">
@@ -196,4 +202,60 @@
   </div>
 </div>
 @endforeach
+
+<script>
+    function printQRCode(url, namaPasien) {
+    var printWindow = window.open('', '', 'height=600,width=900');
+
+    printWindow.document.write(
+        '<html lang="id">' +
+        '<head>' +
+        '<title>Print QR</title>' +
+        '<meta charset="UTF-8">' +
+        '<meta name="viewport" content="width=device-width, initial-scale=1">' +
+
+        // Bootstrap dan FontAwesome
+        '<link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">' +
+        '<link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.0/css/all.min.css" rel="stylesheet">' +
+
+        // QRCode JS
+        '<script src="https://cdnjs.cloudflare.com/ajax/libs/qrcodejs/1.0.0/qrcode.min.js"><\/script>' +
+
+        // CSS Styling
+        '<style>' +
+        'body { font-family: Arial, sans-serif; background-color: #f8f9fa; padding: 40px; margin: 0; }' +
+        '.card { max-width: 400px; margin: auto; border-radius: 10px; box-shadow: 0 0 10px rgba(0,0,0,0.1); background: white; }' +
+        '.card-header { background-color: #0d6efd; color: white; text-align: center; padding: 1rem; border-radius: 10px 10px 0 0; }' +
+        '.card-body { padding: 2rem; text-align: center; }' +
+        '.qr-code { margin: 20px auto; width: 200px; height: 200px; }' +
+        '.nama-pasien { font-weight: 600; font-size: 1.25rem; margin-bottom: 1rem; }' +
+        '@media print { body { padding: 0; background: white; } .card { box-shadow: none; border: none; } }' +
+        '</style>' +
+        '</head>' +
+        '<body>' +
+        '<div class="card">' +
+        '<div class="card-header"><h4>QR Code Pasien</h4></div>' +
+        '<div class="card-body">' +
+        `<div class="nama-pasien">Nama Pasien: ${namaPasien}</div>` +    // Nama pasien sekarang muncul di sini
+        '<div id="qrcode" class="qr-code"></div>' +
+        '</div>' +
+        '</div>' +
+
+        '<script>' +
+        `new QRCode(document.getElementById("qrcode"), "${url}");` +
+        'setTimeout(function() { window.print(); }, 1000);' +
+        '<\/script>' +
+
+        '</body></html>'
+    );
+
+    printWindow.document.close();
+}
+
+
+</script>
+
+
+
+
 @endsection

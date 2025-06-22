@@ -48,7 +48,6 @@
                                 <th width="10%" class="text-center">Sarana</th>
                                 <th width="10%" class="text-center">Tanggal Pengaduan</th>
                                 <th width="5%" class="text-center">Tipe</th>
-
                                 <th width="5%" class="text-center">Deskripsi</th>
                                 <th width="5%" class="text-center">Status</th>
                                 <th width="10%" class="text-center">Tanggal Selesai</th>
@@ -58,17 +57,16 @@
                         <tbody>
                             @foreach($pengaduan as $data)
                             <tr>
-                                <td class="text-center">{{ $loop->iteration }}</td>
-                                <td>{{ $data->userPengadu->name }}</td>
-                                <td>
+                                <td class="text-center align-middle-custom">{{ $loop->iteration }}</td>
+                                <td class="align-middle-custom">{{ $data->userPengadu->name }}</td>
+                                <td class="align-middle-custom">
                                     @if($data->ruangan)
                                         {{ $data->ruangan->nama }}
                                     @else
                                         <span class="text-danger">Data ruangan telah dihapus</span>
                                     @endif
                                 </td>
-
-                                <td>
+                                <td class="align-middle-custom">
                                     @if($data->sarana)
                                         {{ $data->sarana->nama }}
                                     @else
@@ -76,10 +74,10 @@
                                     @endif
                                 </td>
 
-                                <td>{{  date('d F Y H:i:s', strtotime($data->tgl_pengaduan)) }}</td>
-                                <td>{{ $data->tipe }}</td>
+                                <td class="align-middle-custom">{{  date('d F Y H:i:s', strtotime($data->tgl_pengaduan)) }}</td>
+                                <td class="align-middle-custom">{{ $data->tipe }}</td>
 
-                                <td>{{ $data->deskripsi }}</td>
+                                <td class="align-middle-custom">{{ $data->deskripsi }}</td>
                                 <td class="text-center align-middle-custom">
                                     @if($data->status == 'Menunggu Persetujuan Oleh Admin')
                                         <span class="label label-danger">Menunggu Persetujuan</span>
@@ -89,25 +87,29 @@
                                         <span class="label label-success">Selesai</span>
                                     @elseif($data->status == 'tidak_dapat_dikerjakan')
                                         <span class="label label-default">Tidak Dapat Dikerjakan</span>
+                                    @elseif ($data->status == 'Ditolak')
+                                        <span class="label label-danger">Ditolak</span>
                                     @endif
                                 </td>
-                                <td>
+                                <td class="align-middle-custom">
                                     @if($data->tgl_pukul_selesai == "")
                                     -
                                     @else
                                     {{ date('d F Y H:i:s', strtotime($data->tgl_pukul_selesai)) }}
                                     @endif
                                 </td>
-                                <td class="text-center">
-
+                                <td class="text-center align-middle-custom">
                                     @if(Auth::user() && Auth::user()->level == 2) <!-- Cek apakah user memiliki level 2 -->
                                     @if($data->status == 'Menunggu Persetujuan Oleh Admin')
                                         <button class="btn btn-primary btn-xs" data-toggle="modal" data-target="#assignModal-{{ $data->id }}">
                                             <i class="fa fa-paper-plane" data-toggle="tooltip" data-placement="top" title="Kirim ke Petugas"></i>
                                         </button>
+                                        <button class="btn btn-danger btn-xs" data-toggle="modal" data-target="#tolakModal-{{ $data->id }}">
+                                            <i class="fa fa-times" data-toggle="tooltip" title="Tolak Pengaduan"></i>
+                                        </button>
+
                                     @endif
                                 @endif
-
 
                                 <a href="/admin/pengaduan/detail/{{ $data->id }}" class="btn btn-info btn-xs">
                                     <i class="glyphicon glyphicon-list-alt" data-toggle="tooltip" data-placement="top" title="Detail Data"></i>
@@ -180,6 +182,30 @@
             </div>
         </div>
     </div>
+</div>
+<!-- Modal Tolak Pengaduan -->
+<div class="modal fade" id="tolakModal-{{ $data->id }}" tabindex="-1" role="dialog" aria-labelledby="tolakModalLabel-{{ $data->id }}" aria-hidden="true">
+  <div class="modal-dialog" role="document">
+    <form action="/admin/pengaduan/tolak/{{ $data->id }}" method="POST">
+      @csrf
+      <div class="modal-content">
+        <div class="modal-header">
+          <h5 class="modal-title">Alasan Penolakan</h5>
+          <button type="button" class="close" data-dismiss="modal"><span>&times;</span></button>
+        </div>
+        <div class="modal-body">
+          <div class="form-group">
+            <label for="alasan">Masukkan alasan kenapa pengaduan ditolak</label>
+            <textarea name="alasan" class="form-control" required rows="4" placeholder="Contoh: Pengaduan tidak valid karena ..."></textarea>
+          </div>
+        </div>
+        <div class="modal-footer">
+          <button type="submit" class="btn btn-danger">Tolak Pengaduan</button>
+          <button type="button" class="btn btn-secondary" data-dismiss="modal">Batal</button>
+        </div>
+      </div>
+    </form>
+  </div>
 </div>
 @endforeach
 
@@ -254,5 +280,6 @@ $riwayat = DB::table('riwayat')->where('id_pengaduan', $data->id)->first(); // M
     </div>
 </div>
 @endforeach
+
 
 @endsection

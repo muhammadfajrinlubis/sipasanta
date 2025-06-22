@@ -52,31 +52,37 @@ class AksiPetugasLaundryController extends Controller
     }
 
     public function pickup(Request $request, $id)
-{
-    $request->validate([
-        'berat' => 'required|numeric|min:0',
-        'biaya' => 'required|numeric|min:0',
-    ]);
-
-    // Ambil data laundry berdasarkan ID
-    $laundry = DB::table('laundry')->where('id', $id)->first();
-
-    // Cek apakah keterangan lebih dari 3
-    if ($laundry->keterangan > 3) {
-        return redirect('/petugaslaundry/laundry')->with('error', 'Data tidak dapat diubah karena status telah melewati batas.');
-    }
-
-    // Update data laundry jika keterangan <= 3
-    DB::table('laundry')
-        ->where('id', $id)
-        ->update([
-            'berat' => $request->berat,
-            'biaya' => $request->biaya,
-            'keterangan' => '3',
+    {
+        $request->validate([
+            'berat' => 'required|numeric|min:0',
+            'biaya' => 'required|numeric|min:0',
+            'siap_pada' => 'required|integer|min:1|max:30', // jumlah hari
         ]);
 
-    return redirect('/petugaslaundry/laundry')->with('success', 'Data laundry berhasil diimputkan');
-}
+        // Ambil data laundry berdasarkan ID
+        $laundry = DB::table('laundry')->where('id', $id)->first();
+
+        // Cek apakah keterangan lebih dari 3
+        if ($laundry->keterangan > 3) {
+            return redirect('/petugaslaundry/laundry')->with('error', 'Data tidak dapat diubah karena status telah melewati batas.');
+        }
+
+        // Hitung waktu selesai dari sekarang + jumlah hari
+        $tanggalSelesai = now()->addDays($request->siap_pada);
+
+        // Update data laundry
+        DB::table('laundry')
+            ->where('id', $id)
+            ->update([
+                'berat' => $request->berat,
+                'biaya' => $request->biaya,
+                'siap_pada' => $tanggalSelesai,
+                'keterangan' => '3',
+            ]);
+
+        return redirect('/petugaslaundry/laundry')->with('success', 'Data laundry berhasil diimputkan');
+    }
+
 
 
     public function selesai($id)

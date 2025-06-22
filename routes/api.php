@@ -54,3 +54,7 @@ Route::get('/panic-button', [PanicButtonController::class, 'store']);
 Route::post('/panic-button', [PanicButtonController::class, 'store']);
 Route::get('/panic-button/pending', [PanicButtonController::class, 'getPending']);
 Route::post('/panic-button/{id}/selesai', [PanicButtonController::class, 'markAsSelesai']);
+Route::post('/panic-button/update-status', [PanicButtonController::class, 'updateStatus']);
+
+Route::get('/panic-logs/pending', [PanicButtonController::class, 'getPending']);
+Route::put('/panic-logs/{kamar_id}/dismiss', [PanicButtonController::class, 'dismiss']);

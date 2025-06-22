@@ -5,6 +5,7 @@ namespace App\Http\Controllers\Admin;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\DB;
 use App\Http\Controllers\Controller;
+use Illuminate\Support\Facades\Hash;
 
 class AdminController extends Controller
 {
@@ -129,7 +130,23 @@ class AdminController extends Controller
         return redirect('/admin/admin')->with("success","Data Berhasil Dihapus !");
     }
 
+    public function resetPassword($id)
+    {
+        // Ambil id_user dari tabel admin
+        $admin = DB::table('admin')->where('id', $id)->first();
 
+        if (!$admin) {
+            return redirect()->back()->with('error', 'Data admin tidak ditemukan');
+        }
+
+        // Update password user yang terkait
+        DB::table('users')->where('id', $admin->id_user)->update([
+            'password' => Hash::make('12345678'),
+            'updated_at' => now(),
+        ]);
+
+        return redirect()->back()->with('success', 'Password berhasil di-reset ke 12345678');
+    }
 
 
 }

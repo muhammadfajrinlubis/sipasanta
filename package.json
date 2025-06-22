@@ -11,7 +11,10 @@
         "vite": "^5.0.0"
     },
     "dependencies": {
-        "laravel-echo": "^2.1.4",
+        "datatables.net": "^2.3.2",
+        "datatables.net-bs4": "^2.3.2",
+        "jquery": "^3.7.1",
+        "laravel-echo": "^2.1.5",
         "pusher-js": "^8.4.0"
     }
 }

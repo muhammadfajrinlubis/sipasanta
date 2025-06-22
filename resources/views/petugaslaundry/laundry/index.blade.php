@@ -47,6 +47,7 @@
                         <th>Berat</th>
                         <th width="15%" class="text-center">Biaya</th>
                         <th>Keterangan</th>
+                        <th>Siap Pada</th>
                         <th width="15%" class="text-center">Action</th>
                      </tr>
                   </thead>
@@ -86,6 +87,9 @@
                             <span class="label label-default alasan-toggle" data-id="{{ $data->id }}">Tidak Dapat Dikerjakan</span>
                         @endif
 
+                        </td>
+                        <td class="align-middle-custom">
+                            {{ $data->siap_pada ? \Carbon\Carbon::parse($data->siap_pada)->locale('id')->timezone('Asia/Jakarta')->translatedFormat('l, d F Y H:i') : '-' }}
                         </td>
                         <td class="text-center align-middle-custom" width="15%">
                             @if($data->keterangan == '1')
@@ -163,6 +167,17 @@
                     <label>Berat Cucian (kg)</label>
                     <input type="number" name="berat" class="form-control" id="weight-{{$data->id}}" placeholder="Masukkan berat cucian" oninput="calculateCost({{$data->id}})">
                 </div>
+
+                <div class="form-group" style="font-size: 17px;">
+                    <label>Perkiraan Hari Selesai</label>
+                    <select name="siap_pada" class="form-control" required>
+                        <option value="" disabled selected>Pilih estimasi hari</option>
+                        @for($i = 1; $i <= 7; $i++)
+                            <option value="{{ $i }}">{{ $i }} hari</option>
+                        @endfor
+                    </select>
+                </div>
+
                 <div class="form-group" style="font-size: 17px;">
                     <label>Biaya (Rp)</label>
                     <input type="text" class="form-control" name="biaya" id="cost-{{$data->id}}" readonly style="background-color: white;">

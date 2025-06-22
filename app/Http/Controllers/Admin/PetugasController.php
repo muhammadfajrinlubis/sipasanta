@@ -5,6 +5,7 @@ namespace App\Http\Controllers\Admin;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\DB;
 use App\Http\Controllers\Controller;
+use Illuminate\Support\Facades\Hash;
 
 class PetugasController extends Controller
 {
@@ -137,5 +138,22 @@ class PetugasController extends Controller
         DB::table('users')->where('id', $petugas->id_user)->delete();
 
         return redirect('/admin/petugas')->with("success", "Data Berhasil Dihapus!");
+    }
+    public function resetPassword($id)
+    {
+        // Ambil id_user dari tabel petugas
+        $petugas = DB::table('petugas')->where('id', $id)->first();
+
+        if (!$petugas) {
+            return redirect()->back()->with('error', 'Data petugas tidak ditemukan');
+        }
+
+        // Update password user yang terkait
+        DB::table('users')->where('id', $petugas->id_user)->update([
+            'password' => Hash::make('12345678'),
+            'updated_at' => now(),
+        ]);
+
+        return redirect()->back()->with('success', 'Password berhasil di-reset ke 12345678');
     }
 }

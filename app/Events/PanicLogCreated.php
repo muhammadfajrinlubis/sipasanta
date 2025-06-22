@@ -37,15 +37,18 @@ class PanicLogCreated implements ShouldBroadcast
      */
     public function broadcastWith()
     {
+        $latestPanicLog = optional($this->pasien->kamar)->panicLogs()->latest()->first();
         return [
             'pasien' => $this->pasien ? [
                 'nama' => $this->pasien->nama,
                 'kendala' => $this->pasien->kendala,
                 'status' => $this->pasien->status,
+
             ] : null,
             'kamar' => [
                 'id' => optional($this->pasien->kamar)->id,
                 'nomor_kamar' => optional($this->pasien->kamar)->nomor_kamar ?? 'Tidak diketahui',
+                'status_panic_log' => $latestPanicLog ? $latestPanicLog->status : 'Tidak ada log',
             ],
             'ruangan' => [
                 'nama' => optional(optional($this->pasien->kamar)->ruangan)->nama ?? 'Tidak diketahui',

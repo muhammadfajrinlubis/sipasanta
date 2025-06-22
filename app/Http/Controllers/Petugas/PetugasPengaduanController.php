@@ -30,11 +30,10 @@ class PetugasPengaduanController extends Controller
     // Menampilkan detail pengaduan
     public function detail($id)
     {
-        $pengaduan = Pengaduan::with(['ruangan', 'sarana', 'userPengadu', 'userPetugas'])
-            ->findOrFail($id);
-
+        $pengaduan = Pengaduan::with(['ruangan', 'sarana', 'userPengadu', 'userPetugas', 'rating'])->find($id);
         return view('petugas.pengaduan.detail', compact('pengaduan'));
     }
+
 
     // Menampilkan form aksi pada pengaduan
     public function aksi($id)

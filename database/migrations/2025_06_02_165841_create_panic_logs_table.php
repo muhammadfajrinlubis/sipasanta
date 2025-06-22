@@ -14,7 +14,7 @@ return new class extends Migration
         Schema::create('panic_logs', function (Blueprint $table) {
             $table->id();
             $table->unsignedBigInteger('kamar_id'); // relasi ke kamar
-            $table->enum('status', ['belum_ditangani', 'diproses', 'selesai'])->default('belum_ditangani'); // status panic log
+            $table->enum('status', ['alarm_aktif','belum_ditangani', 'diproses', 'selesai'])->default('belum_ditangani'); // status panic log
             $table->timestamps();
 
             // Foreign key ke tabel kamar

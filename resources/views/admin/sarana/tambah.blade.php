@@ -50,8 +50,8 @@
                <div class="row">
                   <div class="col-md-12">
                      <div class="form-group">
-                        <label>Jenis Sarana Prasarana</label>
-                        <input type="text" name="nama" autofocus class="form-control" placeholder="Masukkan Nama ruangan .....">
+                        <label>Jenis Sarana Prasarana<span class="text-danger">* </span></label>
+                        <input type="text" name="nama" autofocus class="form-control" placeholder="Masukkan Nama ruangan ....." required>
                      </div>
                   </div>
                </div>

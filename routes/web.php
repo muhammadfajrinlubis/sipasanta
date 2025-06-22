@@ -42,7 +42,7 @@ Route::post('/admin/change_password', [HomeController::class, 'change_password']
 
 
 // Data Jabatan
-Route::prefix('admin/jabatan')->middleware('cekLevel:1')->controller(JabatanController::class)->group(function () {
+Route::prefix('admin/jabatan')->middleware('cekLevel:1 ,2')->controller(JabatanController::class)->group(function () {
     Route::get('/', 'read');
     Route::get('/add', 'add');
     Route::post('/create', 'create');
@@ -56,13 +56,14 @@ Route::prefix('admin/jabatan')->middleware('cekLevel:1')->controller(JabatanCont
 });
 
 // Data Admin
-Route::prefix('admin/admin')->middleware('cekLevel:1')->controller(AdminController::class)->group(function () {
+Route::prefix('admin/admin')->middleware('cekLevel:1, 2')->controller(AdminController::class)->group(function () {
     Route::get('/', 'read');
     Route::get('/add', 'add');
     Route::post('/create', 'create');
     Route::get('/edit/{id}', 'edit');
     Route::post('/update/{id}', 'update');
     Route::get('/delete/{id}', 'delete');
+    Route::post('/reset-password/{id}', 'resetPassword');
     Route::post('/import', 'import');
 });
 
@@ -75,18 +76,21 @@ Route::prefix('admin/perawat')->middleware('cekLevel:1, 2')->controller(PerawatC
     Route::get('/edit/{id}', 'edit');
     Route::post('/update/{id}', 'update');
     Route::get('/delete/{id}', 'delete');
+    Route::post('/reset-password/{id}', 'resetPassword');
     Route::post('/import', 'import');
 });
 
 // Data Pegawai
-Route::prefix('admin/pegawai')->middleware('cekLevel:1')->controller(PegawaiController::class)->group(function () {
+Route::prefix('admin/pegawai')->middleware('cekLevel:1, 2')->controller(PegawaiController::class)->group(function () {
     Route::get('/', 'read');
     Route::get('/add', 'add');
     Route::post('/create', 'create');
     Route::get('/edit/{id}', 'edit');
     Route::post('/update/{id}', 'update');
     Route::get('/delete/{id}', 'delete');
+    Route::post('/reset-password/{id}', 'resetPassword');
     Route::post('/import', 'import');
+
 });
 
 // Data Petugas
@@ -97,6 +101,7 @@ Route::prefix('admin/petugas')->middleware('cekLevel:1, 2')->controller(PetugasC
     Route::get('/edit/{id}', 'edit');
     Route::post('/update/{id}', 'update');
     Route::get('/delete/{id}', 'delete');
+    Route::post('/reset-password/{id}', 'resetPassword');
     Route::post('/import', 'import');
 });
 
@@ -108,10 +113,11 @@ Route::prefix('admin/petugaslaundry')->middleware('cekLevel:1,2')->controller(Pe
     Route::get('/edit/{id}', 'edit');
     Route::post('/update/{id}', 'update');
     Route::get('/delete/{id}', 'delete');
+    Route::post('/reset-password/{id}', 'resetPassword');
     Route::post('/import', 'import');
 });
 
-Route::prefix('admin/ruangan')->middleware('cekLevel:1')->controller(RuanganController::class)->group(function () {
+Route::prefix('admin/ruangan')->middleware('cekLevel:1, 2')->controller(RuanganController::class)->group(function () {
     Route::get('/', 'read');
     Route::get('/add', 'add');
     Route::post('/create', 'create');
@@ -120,7 +126,7 @@ Route::prefix('admin/ruangan')->middleware('cekLevel:1')->controller(RuanganCont
     Route::get('/delete/{id}', 'delete');
 });
 
-Route::prefix('admin/kamar')->middleware('cekLevel:1')->controller(KamarController::class)->group(function () {
+Route::prefix('admin/kamar')->middleware('cekLevel:1, 2')->controller(KamarController::class)->group(function () {
     Route::get('/', 'read');
     Route::get('/add', 'add');
     Route::post('/create', 'create');
@@ -130,7 +136,7 @@ Route::prefix('admin/kamar')->middleware('cekLevel:1')->controller(KamarControll
 });
 
 
-Route::prefix('admin/sarana')->middleware('cekLevel:1')->controller(SaranaController::class)->group(function () {
+Route::prefix('admin/sarana')->middleware('cekLevel:1, 2')->controller(SaranaController::class)->group(function () {
     Route::get('/', 'read');
     Route::get('/add', 'add');
     Route::post('/create', 'create');
@@ -151,7 +157,7 @@ Route::prefix('admin/pengaduan')->middleware('cekLevel:1, 2')->controller(Pengad
     Route::get('/delete/{id}', 'delete');
     Route::get('/detail/{id}', 'detail');
     Route::get('/admin/pengaduan/mark-as-read', [PengaduanPegawaiController::class, 'markAsRead']);
-
+    Route::post('/tolak/{id}', 'tolak');
 
 });
 
@@ -165,7 +171,6 @@ Route::prefix('pegawai/pengaduan')->middleware('cekLevel:4')->controller(Pengadu
     Route::get('/detail/{id}', 'detail');
     Route::post('/rating/{id}', 'store');
 
-
 });
 
 Route::prefix('petugas/pengaduan')->middleware('cekLevel:3')->controller(PetugasPengaduanController::class)->group(function () {
@@ -177,7 +182,7 @@ Route::prefix('petugas/pengaduan')->middleware('cekLevel:3')->controller(Petugas
 
 });
 
-Route::prefix('admin/pasien')->middleware('cekLevel:1, 6')->controller(PasienController::class)->group(function () {
+Route::prefix('admin/pasien')->middleware('cekLevel:1, 2, 6')->controller(PasienController::class)->group(function () {
     Route::get('/', 'read');
     Route::get('/add', 'add');
     Route::post('/create', 'create');
@@ -185,15 +190,19 @@ Route::prefix('admin/pasien')->middleware('cekLevel:1, 6')->controller(PasienCon
     Route::get('/detail/{id}', 'detail');
     Route::post('/update/{id}', 'update');
     Route::get('/delete/{id}', 'delete');
+    Route::put('/panic-logs/{id}', 'updateStatusPanicLog')->name('panic-logs.updateStatusPanicLog');
     Route::get('/panic-button', 'panicButton');
+    Route::get('/print-qr/{id}','printQR');
+    Route::get('/print-qr-data/{id}','getQrData');
      // Tambahan route untuk AJAX get kamar berdasarkan ruangan
     Route::get('/get-kamar/{ruangan_id}', 'getKamar');
+    Route::get('/get-kamar/{ruangan_id}/{pasien_id?}', 'getKamarEdit');
     Route::post('/status/{id}', 'updateStatus');
 
 });
 Route::get('admin/pasien/show-public/{id}', [PasienController::class, 'showPublic'])->name('pasien.showPublic');
 Route::post('/pasien/laundry-request', [PasienController::class, 'ajukanLaundry'])->name('pasien.laundryRequest');
- Route::post('/pasien/laundry-request', [PasienController::class, 'laundryRequest'])->name('pasien.laundryRequest');
+Route::post('/pasien/laundry-request', [PasienController::class, 'laundryRequest'])->name('pasien.laundryRequest');
 
 
 

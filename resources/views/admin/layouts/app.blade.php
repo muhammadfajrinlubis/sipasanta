@@ -210,74 +210,167 @@
 </script>
 
 <script>
-        document.addEventListener('DOMContentLoaded', function () {
-             if (userLevel != 6) return;
-            const audio = new Audio('/sound/notifikasi.mp3');
-            audio.loop = true;
+document.addEventListener('DOMContentLoaded', function () {
+    if (typeof userLevel === 'undefined' || userLevel != 6) return;
 
-            const wrapper = document.getElementById('notifWrapper');
+    const audio = new Audio('/sound/notifikasi.mp3');
+    audio.loop = true;
 
-            if (typeof window.Echo !== 'undefined') {
-                window.Echo.channel('panic-logs')
-                    .listen('PanicLogCreated', (e) => {
-                        const pasien = e.pasien ?? null;
-                        const kamar = e.kamar ?? {};
-                        const ruangan = e.ruangan ?? {};
-                        const kamarId = kamar.id ?? null;
+    const wrapper = document.getElementById('notifWrapper');
+    let alarmTurnedOff = false;
 
-                        // Cek apakah notifikasi untuk kamar ini sudah ada
-                        const existingNotif = wrapper.querySelector(`.notif-container[data-kamar-id="${kamarId}"]`);
-                        if (existingNotif) {
-                            console.log("Notifikasi untuk kamar ini sudah ada, abaikan.");
-                            return;
-                        }
+    function getStoredAlarms() {
+        const stored = localStorage.getItem('activePanicAlarms');
+        if (!stored) return [];
+        try {
+            return JSON.parse(stored);
+        } catch {
+            return [];
+        }
+    }
 
-                        const pasienNama = pasien?.nama ?? 'Tidak ada pasien';
-                        const pasienKendala = pasien?.kendala ?? '-';
-                        const ruanganNama = ruangan.nama ?? 'Tidak diketahui';
-                        const kamarNomor = kamar.nomor_kamar ?? 'Tidak diketahui';
-
-                        const notif = document.createElement('div');
-                        notif.classList.add('notif-container');
-                        notif.setAttribute('data-kamar-id', kamarId);
-
-                        notif.innerHTML = `
-                            <div class="notif-title">🚨 Panic Button Ditekan!</div>
-                            <div class="notif-content">
-                                <strong>Ruangan:</strong> ${ruanganNama}<br>
-                                <strong>Nomor Kamar:</strong> ${kamarNomor}<br>
-                                <strong>Waktu:</strong> ${e.created_at}<br>
-                                <strong>Pasien:</strong> ${pasienNama}<br>
-                                <strong>Kendala:</strong> ${pasienKendala}
-                            </div>
-                            <button class="notif-button">Matikan Alarm</button>
-                        `;
-
-                        wrapper.appendChild(notif);
-
-                        // Mainkan audio jika belum menyala
-                        if (audio.paused) {
-                            audio.play().catch(err => console.error("Gagal memutar audio:", err));
-                        }
-
-                        // Tombol matikan alarm
-                        const stopBtn = notif.querySelector('.notif-button');
-                        stopBtn.addEventListener('click', () => {
-                            notif.remove();
-
-                            // Hentikan audio jika tidak ada notifikasi tersisa
-                            if (wrapper.querySelectorAll('.notif-container').length === 0) {
-                                audio.pause();
-                                audio.currentTime = 0;
-                            }
-                        });
-                    });
-            } else {
-                console.error("Laravel Echo belum terinisialisasi!");
-            }
+    function filterUniqueByKamarId(arr) {
+        const seen = new Set();
+        return arr.filter(item => {
+            if (seen.has(item.kamar_id)) return false;
+            seen.add(item.kamar_id);
+            return true;
         });
+    }
+
+    function setStoredAlarms(data) {
+        const uniqueData = filterUniqueByKamarId(data);
+        localStorage.setItem('activePanicAlarms', JSON.stringify(uniqueData));
+    }
+
+    function renderNotifs(panicLogs) {
+        const existingKamarIds = Array.from(wrapper.querySelectorAll('.notif-container')).map(el => el.getAttribute('data-kamar-id'));
+
+        panicLogs.forEach(e => {
+            const kamarId = String(e.kamar_id);
+            if (existingKamarIds.includes(kamarId)) return;
+
+            const pasienNama = e.pasien_nama ?? 'Tidak ada pasien';
+            const pasienKendala = e.pasien_kendala ?? '-';
+            const ruanganNama = e.nama_ruangan ?? 'Tidak diketahui';
+            const kamarNomor = e.nomor_kamar ?? 'Tidak diketahui';
+            const createdAt = new Date(e.created_at).toLocaleString();
+
+            const notif = document.createElement('div');
+            notif.classList.add('notif-container');
+            notif.setAttribute('data-kamar-id', kamarId);
+            notif.innerHTML = `
+                <div style="font-weight: bold; font-size: 18px; color: #d9534f; margin-bottom: 10px;">🚨 Panic Button Ditekan!</div>
+                <div style="font-size: 14px; margin-bottom: 10px;">
+                    <strong>Ruangan:</strong> ${ruanganNama}<br>
+                    <strong>Nomor Kamar:</strong> ${kamarNomor}<br>
+                    <strong>Waktu:</strong> ${createdAt}<br>
+                    <strong>Pasien:</strong> ${pasienNama}<br>
+                    <strong>Kendala:</strong> ${pasienKendala}
+                </div>
+                <button style="background-color: #d9534f; border: none; color: white; padding: 8px 12px; border-radius: 5px; cursor: pointer;">Matikan Alarm</button>
+            `;
+
+            wrapper.appendChild(notif);
+
+            const stopBtn = notif.querySelector('button');
+            stopBtn.addEventListener('click', () => {
+                // Kirim request ke server untuk update status
+                fetch(`/api/panic-logs/${kamarId}/dismiss`, {
+                    method: 'PUT',
+                    headers: {
+                        'Content-Type': 'application/json',
+                        'Accept': 'application/json'
+                    },
+                })
+                .then(response => response.json())
+                .then(res => {
+                    console.log(res.message);
+
+                    notif.remove();
+
+                    // Hapus dari localStorage
+                    let currentAlarms = getStoredAlarms();
+                    currentAlarms = currentAlarms.filter(item => String(item.kamar_id) !== kamarId);
+                    setStoredAlarms(currentAlarms);
+
+                    // Matikan audio
+                    audio.pause();
+                    audio.currentTime = 0;
+
+                    // Langsung refresh halaman
+                    location.reload();
+                })
+                .catch(err => {
+                    console.error('Gagal update status panic log:', err);
+                });
+            });
+        });
+
+        if (wrapper.querySelectorAll('.notif-container').length > 0 && audio.paused) {
+            audio.play().catch(err => console.error("Gagal memutar audio:", err));
+        }
+    }
+
+    function fetchPendingPanicLogs() {
+        fetch('/api/panic-logs/pending')
+            .then(response => response.json())
+            .then(data => {
+                let alarmsFromServer = data.data || [];
+                alarmsFromServer = filterUniqueByKamarId(alarmsFromServer);
+                setStoredAlarms(alarmsFromServer);
+                renderNotifs(alarmsFromServer);
+            })
+            .catch(err => console.error('Gagal ambil data panic logs:', err));
+    }
+
+    function renderFromStorage() {
+        const stored = getStoredAlarms();
+        if (stored.length > 0) {
+            renderNotifs(stored);
+        }
+    }
+
+    renderFromStorage();
+    fetchPendingPanicLogs();
+
+    if (typeof window.Echo !== 'undefined') {
+        window.Echo.channel('panic-logs')
+            .listen('PanicLogCreated', () => {
+                fetchPendingPanicLogs();
+            });
+    } else {
+        console.error("Laravel Echo belum terinisialisasi!");
+    }
+});
 </script>
+
+
+
+
+@php
+    $userLevel = auth()->check() ? auth()->user()->level : null;
+@endphp
+
+@if(in_array($userLevel, [1, 2]))
+    <script src="{{ asset('js/admin-notifications.js') }}"></script>
+    <meta name="csrf-token" content="{{ csrf_token() }}">
+@endif
+
+@if(in_array($userLevel, [3 ]))
+    <script src="{{ asset('js/petugas-notifications.js') }}"></script>
+    <meta name="csrf-token" content="{{ csrf_token() }}">
+@endif
+
+
 @stack('scripts')
+<!-- jQuery -->
+<script src="https://code.jquery.com/jquery-3.6.4.min.js"></script>
+
+<!-- DataTables -->
+<link rel="stylesheet" href="https://cdn.datatables.net/1.13.6/css/jquery.dataTables.min.css" />
+<script src="https://cdn.datatables.net/1.13.6/js/jquery.dataTables.min.js"></script>
+
 @vite(['resources/js/app.js'])
 @stack('styles')
 <!-- jQuery (wajib) -->
@@ -286,13 +379,11 @@
 <script src="https://cdn.jsdelivr.net/npm/select2@4.1.0-rc.0/dist/js/select2.min.js"></script>
 </head>
 
-<body class="menubar-left menubar-unfold menubar-light theme-primary">
+<body class="menubar-left menubar-unfold menubar-light theme-primary" data-user-id="{{ auth()->user()->id }}">
     @if (Auth::user()->level == 6)
   <div class="notif-wrapper" id="notifWrapper"></div>
     @endif
 <!--============= start main area -->
-
-<!-- APP NAVBAR ==========-->
 <!-- APP NAVBAR ==========-->
 <nav id="app-navbar" class="navbar navbar-inverse navbar-fixed-top primary">
      <!-- navbar header -->
@@ -331,11 +422,42 @@
       </ul>
 
       <ul class="nav navbar-toolbar navbar-toolbar-right navbar-right">
+        @if (in_array(Auth::user()->level, [1, 2]))
+        <li class="dropdown">
+          <a href="javascript:void(0)" class="dropdown-toggle" data-toggle="dropdown" role="button" aria-haspopup="true" aria-expanded="false">
+            <i class="zmdi zmdi-hc-lg zmdi-notifications"></i>
+            <span class="badge notification-count" style="position: absolute; top: 0; right: 0; background-color: red; color: white; border-radius: 50%; padding: 0.3em 0.6em; font-size: 0.8em; display: none;">0</span> <!-- Badge for count -->
+          </a>
+          <div class="media-group dropdown-menu animated flipInY">
+            <!-- New notifications will be inserted here -->
+        </div>
+        </li>
+         @elseif(Auth::user()->level == 3)
+        <li class="nav-item dropdown">
+            <a href="javascript:void(0)"
+               id="notification-toggle"
+               class="dropdown-toggle"
+               data-toggle="dropdown"
+               role="button"
+               aria-haspopup="true"
+               aria-expanded="false">
+                <i class="zmdi zmdi-hc-lg zmdi-notifications"></i>
+                <span id="notification-badge"
+                      class="badge notification-count"
+                      style="position: absolute; top: 0; right: 0; background-color: red; color: white; border-radius: 50%; padding: 0.3em 0.6em; font-size: 0.8em; display: none;">0</span>
+            </a>
+            <div id="notification-panel" class="media-group dropdown-menu animated flipInY" style="display: none; max-height: 400px; overflow-y: auto;">
+                <!-- Notifikasi akan dimasukkan di sini -->
+            </div>
+        </li>
+    @else
         <li class="dropdown">
             <a href="javascript:void(0)" class="dropdown-toggle" data-toggle="dropdown" role="button" aria-haspopup="true" aria-expanded="false">
-                <i class="zmdi zmdi-hc-lg zmdi-notifications"></i>
+              <i class="zmdi zmdi-hc-lg zmdi-notifications"></i>
+              <span class="badge notification-count" style="position: absolute; top: 0; right: 0; background-color: red; color: white; border-radius: 50%; padding: 0.3em 0.6em; font-size: 0.8em; display: none;">0</span> <!-- Badge for count -->
             </a>
-        <div id="notification-container" class="position-fixed top-0 end-0 p-3" style="z-index: 1050;"></div>
+        </li>
+        @endif
         <li class="dropdown">
           <a href="javascript:void(0)" class="dropdown-toggle" data-toggle="dropdown" role="button" aria-haspopup="true" aria-expanded="false"><i class="zmdi zmdi-hc-lg zmdi-settings"></i></a>
           <ul class="dropdown-menu animated flipInY">
@@ -389,7 +511,7 @@
             <span class="menu-text">Dashboards</span>
           </a>
         </li>
-        @if(Auth::User()->level == '1')
+        @if(Auth::user()->level == '1' || Auth::user()->level == '2')
         <li class="has-submenu @if ($activePage == 'jabatan' || $activePage == 'ruangan' || $activePage == 'sarana' || $activePage == 'pasien') active @endif">
             <a href="javascript:void(0)" class="submenu-toggle">
               <i class="menu-icon zmdi zmdi-layers zmdi-hc-lg"></i>
@@ -413,14 +535,14 @@
             </a>
             <ul class="submenu">
                 <!-- Admin -->
-                <li class="@if ($activePage == 'Admin') active @endif">
+                <li class="@if ($activePage == 'admin') active @endif">
                     <a href="/admin/admin" class="menu-item">
                         <i class="bi bi-person-badge-fill"></i> <!-- Admin Icon -->
                         <span class="menu-text">Admin</span>
                     </a>
                 </li>
                <!-- Admin Perawat -->
-                <li class="@if ($activePage == 'AdminPerawat') active @endif">
+                <li class="@if ($activePage == 'adminperawat') active @endif">
                     <a href="/admin/perawat" class="menu-item">
                         <i class="bi bi-person-check-fill"></i> <!-- Icon perawat/staff -->
                         <span class="menu-text">Admin Perawat</span>
@@ -453,7 +575,12 @@
                 </li>
             </ul>
         </li>
-
+         <li class="@if ($activePage == 'panic') active @endif">
+            <a href="/admin/pasien/panic-button">
+                <i class="menu-icon zmdi zmdi-alert-circle zmdi-hc-lg"></i>
+                <span class="menu-text @if ($activePage == 'panic') text-primary @endif">Panggilan Panic Button</span>
+            </a>
+        </li>
         <!-- Pengaduan -->
         <li class="@if ($activePage == 'pengaduan') active @endif">
             <a href="/admin/pengaduan" class="menu-item">
@@ -469,49 +596,6 @@
                 <span class="menu-text">Permintaan Laundry</span>
             </a>
         </li>
-
-        @elseif(Auth::User()->level == '2')
-         <!-- Admin Perawat -->
-        <li class="@if ($activePage == 'AdminPerawat') active @endif">
-            <a href="/admin/perawat" class="menu-item">
-            <i class="menu-icon bi bi-person-check-fill"></i> <!-- Icon perawat/staff -->
-                <span class="menu-text">Admin Perawat</span>
-            </a>
-        </li>
-
-        <!-- Petugas -->
-        <li class="@if ($activePage == 'petugas') active @endif">
-            <a href="/admin/petugas" class="menu-item">
-                <i class=" menu-icon fas fa-user-cog"></i> <!-- Petugas Icon -->
-                <span class="menu-text">Petugas</span>
-            </a>
-        </li>
-
-        <!-- Petugas -->
-        <li class="@if ($activePage == 'petugaslaundry') active @endif">
-            <a href="/admin/petugaslaundry">
-                <i class="menu-icon fas fa-user-cog"></i> <!-- Petugas Icon -->
-                <span class="menu-text">Petugas Laundry</span>
-            </a>
-        </li>
-
-        <!-- Pengaduan -->
-        <li class="@if ($activePage == 'pengaduan') active @endif">
-            <a href="/admin/pengaduan" class="menu-item">
-                <i class="menu-icon zmdi zmdi-file-text zmdi-hc-lg"></i> <!-- Pengaduan Icon -->
-                <span class="menu-text">Pengaduan</span>
-            </a>
-        </li>
-        <!-- Permintaan Laundry -->
-        <li class="@if ($activePage == 'permintaan_laundry') active @endif">
-            <a href="/admin/laundry">
-                <i class="menu-icon zmdi zmdi-washing-machine zmdi-hc-lg"></i> <!-- Laundry Icon -->
-                <span class="menu-text">Permintaan Laundry</span>
-            </a>
-        </li>
-
-
-
         @elseif(Auth::User()->level == '3')
         <li class="@if ($activePage == 'pengaduan') active @endif">
             <a href="/petugas/pengaduan">
@@ -528,13 +612,6 @@
             </a>
           </li>
 
-           <!-- Permintaan Laundry -->
-            <li class="@if ($activePage == 'permintaan_laundry') active @endif">
-                <a href="/pegawai/laundry">
-                    <i class="menu-icon zmdi zmdi-washing-machine zmdi-hc-lg"></i> <!-- Laundry Icon -->
-                    <span class="menu-text">Permintaan Laundry</span>
-                </a>
-            </li>
         @elseif(Auth::User()->level == '5')
            <!-- Permintaan Laundry -->
             <li class="@if ($activePage == 'permintaan_laundry') active @endif">

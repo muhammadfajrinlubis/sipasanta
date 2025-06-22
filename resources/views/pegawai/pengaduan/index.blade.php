@@ -50,12 +50,10 @@
                         <thead class="bg-primary">
                             <tr>
                                 <th width="3%" class="text-center">#</th>
-
                                 <th width="10%" class="text-center">Ruangan</th>
                                 <th width="10%" class="text-center">Sarana</th>
                                 <th width="10%" class="text-center">Tanggal Pengaduan</th>
                                 <th width="5%" class="text-center">Tipe</th>
-
                                 <th width="5%" class="text-center">Dekskripsi</th>
                                 <th width="5%" class="text-center">Status</th>
                                 <th width="10%" class="text-center">Tanggal Selesai</th>
@@ -65,29 +63,24 @@
                         <tbody>
                             @foreach($pengaduan as $data)
                             <tr>
-                                <td class="text-center">{{ $loop->iteration }}</td>
-
-                                <td>
+                                <td class="text-center align-middle-custom">{{ $loop->iteration }}</td>
+                                <td class="align-middle-custom">
                                     @if($data->ruangan)
                                         {{ $data->ruangan->nama }}
                                     @else
                                         <span class="text-danger">Data ruangan telah dihapus</span>
                                     @endif
                                 </td>
-
-                                <td>
+                                <td class="align-middle-custom">
                                     @if($data->sarana)
                                         {{ $data->sarana->nama }}
                                     @else
                                         <span class="text-danger">Data sarana telah dihapus</span>
                                     @endif
                                 </td>
-
-                                <td>{{  date('d F Y d F Y H:i:s', strtotime($data->tgl_pengaduan)) }}</td>
-                                <td>{{ $data->tipe }}</td>
-
-                                <td>{{ $data->deskripsi }}</td>
-
+                                <td class="align-middle-custom">{{  date('d F Y d F Y H:i:s', strtotime($data->tgl_pengaduan)) }}</td>
+                                <td class="align-middle-custom">{{ $data->tipe }}</td>
+                                <td class="align-middle-custom">{{ $data->deskripsi }}</td>
                                 <td class="text-center align-middle-custom">
                                     @if($data->status == 'Menunggu Persetujuan Oleh Admin')
                                         <span class="label label-danger">Menunggu Persetujuan Oleh Admin</span>
@@ -97,6 +90,8 @@
                                         <span class="label label-success">Selesai</span>
                                     @elseif($data->status == 'tidak_dapat_dikerjakan')
                                         <span class="label label-default alasan-toggle" data-id="{{ $data->id }}">Tidak Dapat Dikerjakan</span>
+                                     @elseif ($data->status == 'Ditolak')
+                                        <span class="label label-danger">Ditolak</span>
                                     @endif
                                 </td>
                                 <td>
@@ -106,18 +101,16 @@
                                     {{ date('d F Y H:i:s', strtotime($data->tgl_pukul_selesai)) }}
                                     @endif
                                 </td>
-                                <td class="text-center">
+                                <td class="text-center align-middle-custom">
                                     @if($data->status == 'Menunggu Persetujuan Oleh Admin')
-                    <!-- Tampilkan Tombol Edit dan Delete jika status adalah 'Menunggu Persetujuan Oleh Admin' -->
+                                    <!-- Tampilkan Tombol Edit dan Delete jika status adalah 'Menunggu Persetujuan Oleh Admin' -->
                                     <a href="/pegawai/pengaduan/edit/{{ $data->id }}" class="btn btn-success btn-xs">
                                         <i class="fa fa-edit" data-toggle="tooltip" data-placement="top" title="Edit Data"></i>
                                     </a>
                                     <button class="btn btn-danger btn-xs" data-toggle="modal" data-target="#deleteModal-{{ $data->id }}">
                                         <i class="fa fa-trash" data-toggle="tooltip" data-placement="top" title="Delete Data"></i>
                                     </button>
-
                                 @else
-
                                     <button class="btn btn-success btn-xs" data-toggle="modal" data-target="#historyModal-{{ $data->id }}">
                                         <i class="fa fa-history" data-toggle="tooltip" data-placement="top" title="Lihat Riwayat"></i>
                                     </button>

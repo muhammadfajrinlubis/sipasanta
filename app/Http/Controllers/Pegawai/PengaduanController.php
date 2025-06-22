@@ -8,11 +8,12 @@ use App\Models\Ruangan;
 use App\Models\Pengaduan;
 use Illuminate\Http\Request;
 
+use App\Events\PengaduanCreated;
 use App\Events\NewPengaduanEvent;
 use Illuminate\Support\Facades\DB;
+use Illuminate\Support\Facades\Log;
 use App\Http\Controllers\Controller;
 use Illuminate\Support\Facades\Auth;
-use Illuminate\Support\Facades\Log;
 use Illuminate\Support\Facades\Storage;
 
 class PengaduanController extends Controller
@@ -42,70 +43,49 @@ class PengaduanController extends Controller
     {
         // Validasi data input
         $request->validate([
-            'id_ruangan' => 'required|exists:ruangan,id',
-            'id_sarana' => 'required|exists:sarana,id',
+            'id_ruangan' => 'required',
+            'id_sarana' => 'required',
             'tgl_pengaduan' => 'required|date',
-            'deskripsi' => 'required|string|max:500',
+            'deskripsi' => 'required|string',
             'foto' => 'nullable|image|mimes:jpeg,png,jpg|max:2048',
-            'tipe' => 'required|in:Urgent,Routine,Maintenance,Repair',
-        ], [
-            'id_ruangan.required' => 'Ruangan harus dipilih.',
-            'id_sarana.required' => 'Sarana harus dipilih.',
-            'tgl_pengaduan.required' => 'Tanggal pengaduan wajib diisi.',
-            'deskripsi.required' => 'Deskripsi wajib diisi.',
-            'foto.image' => 'File foto harus berupa gambar.',
-            'tipe.in' => 'Tipe pengaduan tidak valid.',
+            'tipe' => 'required',
         ]);
 
         // Simpan file foto jika ada
-        $foto = null;
         if ($request->hasFile('foto')) {
-            $foto = $request->file('foto')->store('images', 'public');
+            // Tentukan nama file dan simpan ke folder public/images
+            $foto = time() . '_' . $request->file('foto')->getClientOriginalName();
+            $request->file('foto')->move(public_path('images'), $foto);
+        } else {
+            $foto = null;
         }
 
-        // Data pengaduan
-        $pengaduanData = [
+        // Data yang akan disimpan
+        $data = [
             'id_ruangan' => $request->id_ruangan,
             'id_sarana' => $request->id_sarana,
             'tgl_pengaduan' => $request->tgl_pengaduan,
             'deskripsi' => $request->deskripsi,
             'foto' => $foto,
             'id_petugas' => null, // Tidak menggunakan id_petugas
-            'id_user' => Auth::id(), // Mengambil id user dari yang login
+            'id_user' => auth()->user()->id, // User yang login
             'status' => 'Menunggu Persetujuan Oleh Admin', // Status awal
-            'tipe' => $request->tipe, // Tipe pengaduan
+            'tipe' => $request->tipe,
             'created_at' => now(),
             'updated_at' => now(),
         ];
 
-        // Simpan data ke database dengan transaksi
-        try {
-            DB::beginTransaction();
+        // Insert data ke database dan ambil ID-nya
+        $id = DB::table('pengaduan')->insertGetId($data);
 
-            // Insert data pengaduan
-            DB::table('pengaduan')->insert($pengaduanData);
+        // Ambil data lengkap yang baru disimpan
+        $pengaduan = DB::table('pengaduan')->where('id', $id)->first();
 
-            // Kirim notifikasi real-time
-            // Kirim notifikasi real-time
-            event(new NewPengaduanEvent("Pengaduan baru", Auth::user()->name));
+        // Trigger event
+        event(new PengaduanCreated($pengaduan));
 
-
-            DB::commit();
-
-            return redirect('/pegawai/pengaduan')->with('success', 'Data pengaduan berhasil ditambahkan');
-        } catch (\Exception $e) {
-            DB::rollBack();
-
-            // Log error untuk debug
-            Log::error('Error saat menyimpan pengaduan: ', [
-                'error' => $e->getMessage(),
-                'data' => $pengaduanData,
-            ]);
-
-            return redirect('/pegawai/pengaduan')->with('error', 'Terjadi kesalahan saat menyimpan data. Silakan coba lagi.');
-        }
+        return redirect('/pegawai/pengaduan')->with('success', 'Data pengaduan berhasil ditambahkan');
     }
-
 
 public function detail($id)
 {

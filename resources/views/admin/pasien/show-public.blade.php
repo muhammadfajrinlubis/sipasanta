@@ -227,6 +227,7 @@
     ];
 @endphp
 
+
 {{-- Modal Riwayat Laundry --}}
 <div class="modal fade" id="riwayatLaundryModal" tabindex="-1" aria-labelledby="riwayatLaundryLabel" aria-hidden="true">
     <div class="modal-dialog modal-xl modal-dialog-scrollable">
@@ -269,8 +270,11 @@
                                          {{-- Tampilkan berat dan biaya jika status sudah diproses --}}
                                         @if ($currentStep >= 2)
                                             <hr>
+                                            <p><strong>Selesai Pada:</strong>
+                                                {{ $data->siap_pada ? \Carbon\Carbon::parse($data->siap_pada)->timezone('Asia/Jakarta')->translatedFormat('d F Y H:i') : '-' }}
+                                            </p>
                                             <p><strong>Berat Laundry:</strong> {{ $data->berat ?? '-' }} kg</p>
-                                            <p><strong>Biaya Laundry:</strong> Rp {{ number_format($data->biaya ?? 0, 0, ',', '.') }}</p>
+                                            <p><strong>Biaya Laundry:</strong> Rp {{ number_format($data->biaya, 3 , ',', '.') }}</p>
                                         @endif
                                     </div>
                                 </div>
@@ -285,6 +289,7 @@
         </div>
     </div>
 </div>
+
 
 {{-- Bootstrap JS --}}
 <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>

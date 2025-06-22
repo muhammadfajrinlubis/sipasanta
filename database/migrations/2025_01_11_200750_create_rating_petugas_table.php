@@ -19,7 +19,7 @@ return new class extends Migration
 
             // Foreign keys
             $table->unsignedBigInteger('id_pengaduan');
-            $table->unsignedBigInteger('id_petugas');
+            $table->string('id_petugas');
 
             // Kolom lainnya
             $table->text('komentar')->nullable();
@@ -28,10 +28,9 @@ return new class extends Migration
             // Timestamps
             $table->timestamp('created_at')->useCurrent();
             $table->timestamp('updated_at')->default(DB::raw('CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP'))->nullable();
-
             // Relasi
             $table->foreign('id_pengaduan')->references('id')->on('pengaduan')->onDelete('cascade');
-            $table->foreign('id_petugas')->references('id')->on('petugas')->onDelete('cascade');
+
         });
     }
 
@@ -45,7 +44,6 @@ return new class extends Migration
         Schema::table('rating_petugas', function (Blueprint $table) {
             // Menghapus foreign key sebelum tabel dihapus
             $table->dropForeign(['id_pengaduan']);
-            $table->dropForeign(['id_petugas']);
         });
 
         Schema::dropIfExists('rating_petugas');

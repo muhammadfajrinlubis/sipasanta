@@ -51,26 +51,26 @@
                 <div class="col-md-6">
                    <div class="form-group">
                       <label>NIP Admin<span class="text-danger">* </span></label>
-                      <input type="number" name="nip" autofocus class="form-control" placeholder="Masukkan NIP admin .....">
+                      <input type="number" name="nip" autofocus class="form-control" placeholder="Masukkan NIP admin ....." required>
                    </div>
                 </div>
 
                 <div class="col-md-6">
                     <div class="form-group">
                        <label>No. HP Admin<span class="text-danger">* </span></label>
-                       <input type="number" name="no_hp" autofocus class="form-control" placeholder="Masukkan NO HP admin .....">
+                       <input type="number" name="no_hp" autofocus class="form-control" placeholder="Masukkan NO HP admin ....." required>
                     </div>
                  </div>
                 <div class="col-md-6">
                     <div class="form-group">
                        <label>Nama Admin<span class="text-danger">* </span></label>
-                       <input type="text" name="nama" autofocus class="form-control" placeholder="Masukkan Nama admin .....">
+                       <input type="text" name="nama" autofocus class="form-control" placeholder="Masukkan Nama admin ....." required>
                     </div>
                  </div>
                 <div class="col-md-6">
                     <div class="form-group">
                        <label>Jabatan Admin<span class="text-danger">* </span></label>
-                       <select class="form-control select2" name="id_jabatan">
+                       <select class="form-control select2" name="id_jabatan" required>
                           <option value="">-- Pilih Jabatan --</option>
                           @foreach($jabatan as $data)
                           <option value="{{$data->id}}">{{$data->nama}}</option>

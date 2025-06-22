@@ -1,5 +1,5 @@
 @extends('admin.layouts.app', [
-'activePage' => 'perawat',
+'activePage' => 'adminperawat',
 ])
 @section('content')
 <div class="row">
@@ -94,6 +94,9 @@
                              <button class="btn btn-danger btn-xs" data-toggle="modal" data-target="#data-{{ $data->id }}">
                                  <i class="fa fa-trash" data-toggle="tooltip" data-placement="top" title="Delete Data"></i>
                              </button>
+                              <button class="btn btn-warning btn-xs" data-toggle="modal" data-target="#resetModal-{{ $data->id }}">
+                                <i class="fa fa-key" data-toggle="tooltip" data-placement="top" title="Reset Password"></i>
+                            </button>
                          </td>
                      </tr>
                      @endforeach
@@ -159,6 +162,39 @@
          </div>
       </div>
    </div>
+</div>
+<div class="modal fade" id="resetModal-{{ $data->id }}" tabindex="-1" role="dialog" aria-labelledby="resetModalLabel-{{ $data->id }}" aria-hidden="true">
+    <div class="modal-dialog" role="document">
+        <form method="POST" action="/admin/perawat/reset-password/{{ $data->id }}">
+            @csrf
+            <div class="modal-content">
+                <div class="modal-body">
+                    <h2 class="text-center">Reset Password Perawat</h2>
+                    <hr>
+
+                    <div class="form-group" style="font-size: 17px;">
+                        <label>NIP</label>
+                        <input type="text" class="form-control" value="{{ $data->nip }}" readonly style="background-color: white;">
+                        <label>Nama Admin Perawat</label>
+                        <input type="text" class="form-control" value="{{ $data->nama }}" readonly style="background-color: white;">
+                    </div>
+
+                    <p class="text-center mt-3">
+                        Password akan di-reset menjadi: <strong>12345678</strong>
+                    </p>
+
+                    <div class="row mt-4">
+                        <div class="col-md-6">
+                            <button type="submit" class="btn btn-warning btn-block">Reset</button>
+                        </div>
+                        <div class="col-md-6">
+                            <button type="button" class="btn btn-secondary btn-block" data-dismiss="modal">Batal</button>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </form>
+    </div>
 </div>
 @endforeach
 @endsection
