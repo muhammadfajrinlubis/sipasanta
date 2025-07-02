@@ -57,6 +57,7 @@ class PetugasLaundryController extends Controller
 
         return redirect('/admin/petugaslaundry')->with("success","Data Berhasil Ditambah !");
     }
+
     public function edit($id){
         $petugaslaundry= DB::table('petugaslaundry')->where('id',$id)->first();
         $jabatanSelect = DB::table('jabatan')->find($petugaslaundry->id_jabatan);
@@ -140,20 +141,20 @@ class PetugasLaundryController extends Controller
     }
 
     public function resetPassword($id)
-{
-    // Ambil id_user dari tabel pegawai
-    $petugaslaundry = DB::table('petugaslaundry')->where('id', $id)->first();
+    {
+        // Ambil id_user dari tabel pegawai
+        $petugaslaundry = DB::table('petugaslaundry')->where('id', $id)->first();
 
-    if (!$petugaslaundry) {
-        return redirect()->back()->with('error', 'Data petugas laundry tidak ditemukan');
+        if (!$petugaslaundry) {
+            return redirect()->back()->with('error', 'Data petugas laundry tidak ditemukan');
+        }
+
+        // Update password user yang terkait
+        DB::table('users')->where('id', $petugaslaundry->id_user)->update([
+            'password' => Hash::make('12345678'),
+            'updated_at' => now(),
+        ]);
+
+        return redirect()->back()->with('success', 'Password berhasil di-reset ke 12345678');
     }
-
-    // Update password user yang terkait
-    DB::table('users')->where('id', $petugaslaundry->id_user)->update([
-        'password' => Hash::make('12345678'),
-        'updated_at' => now(),
-    ]);
-
-    return redirect()->back()->with('success', 'Password berhasil di-reset ke 12345678');
-}
 }

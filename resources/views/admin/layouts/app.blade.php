@@ -352,13 +352,19 @@ document.addEventListener('DOMContentLoaded', function () {
     $userLevel = auth()->check() ? auth()->user()->level : null;
 @endphp
 
-@if(in_array($userLevel, [1, 2]))
+@if(in_array($userLevel, [ 2]))
     <script src="{{ asset('js/admin-notifications.js') }}"></script>
+    <script src="{{ asset('js/laundry.js') }}"></script>
     <meta name="csrf-token" content="{{ csrf_token() }}">
 @endif
 
 @if(in_array($userLevel, [3 ]))
     <script src="{{ asset('js/petugas-notifications.js') }}"></script>
+    <meta name="csrf-token" content="{{ csrf_token() }}">
+@endif
+
+@if(in_array($userLevel, [5]))
+    <script src="{{ asset('js/petugas-laundry.js') }}"></script>
     <meta name="csrf-token" content="{{ csrf_token() }}">
 @endif
 
@@ -422,8 +428,8 @@ document.addEventListener('DOMContentLoaded', function () {
       </ul>
 
       <ul class="nav navbar-toolbar navbar-toolbar-right navbar-right">
-        @if (in_array(Auth::user()->level, [1, 2]))
-        <li class="dropdown">
+       @if (Auth::check() && Auth::user()->level == 2)
+       <li class="dropdown">
           <a href="javascript:void(0)" class="dropdown-toggle" data-toggle="dropdown" role="button" aria-haspopup="true" aria-expanded="false">
             <i class="zmdi zmdi-hc-lg zmdi-notifications"></i>
             <span class="badge notification-count" style="position: absolute; top: 0; right: 0; background-color: red; color: white; border-radius: 50%; padding: 0.3em 0.6em; font-size: 0.8em; display: none;">0</span> <!-- Badge for count -->
@@ -432,6 +438,23 @@ document.addEventListener('DOMContentLoaded', function () {
             <!-- New notifications will be inserted here -->
         </div>
         </li>
+        <!-- Ikon notifikasi laundry -->
+        <li class="nav-item dropdown">
+            <a class="nav-link" href="#" id="notifLaundry" role="button" data-toggle="dropdown" aria-haspopup="true" aria-expanded="false">
+                <i class="zmdi zmdi-hc-lg zmdi-washing-machine"></i>
+                <span class="badge badge-info notification-count-laundry"
+                    style="position: absolute; top: 0; right: 0; background-color: blue; color: white; border-radius: 50%; padding: 0.3em 0.6em; font-size: 0.8em; display: none;">
+                    0
+                </span>
+            </a>
+
+            <!-- Pastikan class-nya adalah 'dropdown-menu dropdown-laundry' -->
+            <div class="dropdown-menu media-group dropdown-menu-right animated flipInY dropdown-laundry"
+                aria-labelledby="notifLaundry" style="width: 300px;">
+                <!-- Notifikasi akan di-insert di sini oleh JavaScript -->
+            </div>
+        </li>
+
          @elseif(Auth::user()->level == 3)
         <li class="nav-item dropdown">
             <a href="javascript:void(0)"
@@ -450,6 +473,16 @@ document.addEventListener('DOMContentLoaded', function () {
                 <!-- Notifikasi akan dimasukkan di sini -->
             </div>
         </li>
+        @elseif(Auth::user()->level == 5)
+        <li class="nav-item dropdown">
+    <a class="nav-link" id="notifLaundry" data-toggle="dropdown" href="#" role="button" aria-haspopup="true" aria-expanded="false">
+        <i class="zmdi zmdi-notifications"></i>
+        <span class="badge badge-pill badge-danger notification-count-laundry" style="display: none;"></span>
+    </a>
+    <div class="dropdown-menu dropdown-menu-right dropdown-menu-lg dropdown-laundry">
+        <!-- Notifikasi muncul di sini secara dinamis -->
+    </div>
+</li>
     @else
         <li class="dropdown">
             <a href="javascript:void(0)" class="dropdown-toggle" data-toggle="dropdown" role="button" aria-haspopup="true" aria-expanded="false">

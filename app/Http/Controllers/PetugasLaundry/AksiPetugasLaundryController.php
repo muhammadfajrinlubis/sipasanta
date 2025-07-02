@@ -2,6 +2,7 @@
 
 namespace App\Http\Controllers\PetugasLaundry;
 
+use Carbon\Carbon;
 use App\Models\Laundry;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\DB;
@@ -14,15 +15,28 @@ class AksiPetugasLaundryController extends Controller
         $this->middleware('auth');
     }
 
-    public function read()
+   public function read(Request $request)
     {
-        $laundry = Laundry::with(['pasien', 'ruangan', 'user'])
-            ->whereNotNull('keterangan')
-            ->where('keterangan', '!=', '0')
-            ->orderBy('tanggal', 'ASC')
-            ->get();
+        // Ambil tanggal dari request, default hari ini jika tidak ada
+        $tanggal = $request->input('tanggal', Carbon::today()->toDateString());
 
-        return view('petugaslaundry.laundry.index', compact('laundry'));
+        // Buat query awal
+        $query = Laundry::with(['pasien.kamar', 'ruangan'])->orderByDesc('id');
+
+        // Jika checkbox show_all TIDAK dicentang, filter berdasarkan tanggal
+        if (!$request->has('show_all')) {
+            $query->whereDate('tanggal', $tanggal);
+        }
+
+        // Eksekusi query
+        $laundry = $query->get();
+
+        // Kirim data ke view
+        return view('petugaslaundry.laundry.index', [
+            'laundry' => $laundry,
+            'selectedDate' => $tanggal,
+            'showAll' => $request->has('show_all')
+        ]);
     }
 
     public function jemput($id)

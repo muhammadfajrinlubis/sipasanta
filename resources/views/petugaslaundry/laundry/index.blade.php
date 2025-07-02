@@ -20,6 +20,28 @@
                   <i class="glyphicon glyphicon-list"></i> List Data Laundry
                </h4>
             </div>
+            {{-- FILTER TANGGAL DAN OPSI TAMPIL --}}
+            <div class="row mb-3">
+                <div class="col-md-12">
+                    <form method="GET" action="/petugaslaundry/laundry" class="form-inline">
+                        <label for="tanggal" class="mr-2">Filter Tanggal:</label>
+                        <input type="date" id="tanggal" name="tanggal" class="form-control mr-2"
+                            value="{{ old('tanggal', request('tanggal', $selectedDate ?? '') ) }}"
+                            {{ request()->has('show_all') ? 'disabled' : '' }}>
+
+                        <button type="submit" class="btn btn-primary btn-sm mr-2">Tampilkan</button>
+                        <a href="/petugaslaundry/laundry" class="btn btn-secondary btn-sm mr-3">Reset</a>
+
+                        {{-- Opsi tampil semua --}}
+                        <div class="form-check form-check-inline">
+                            <input class="form-check-input" type="checkbox" name="show_all" id="show_all" value="1"
+                                {{ request()->has('show_all') ? 'checked' : '' }}
+                                onchange="this.form.submit()">
+                            <label class="form-check-label" for="show_all">Tampilkan Semua Data</label>
+                        </div>
+                    </form>
+                </div>
+            </div>
          </header>
          <div class="widget-body">
             @if (session('error'))
@@ -105,6 +127,10 @@
                             <button class="btn btn-primary btn-xs" data-toggle="modal" data-target="#send-selesai-{{ $data->id }}">
                             <i class="fa fa-check" data-toggle="tooltip" data-placement="top" title="Selesai"></i>
                             </button>
+                            <button class="btn btn-success btn-xs" onclick="printBon('print-area-{{ $data->id }}')">
+    <i class="fa fa-print" data-toggle="tooltip" data-placement="top" title="Cetak Bon"></i>
+</button>
+
                             @elseif ($data->keterangan == '4')
                         <!-- Tombol Diantar ke Ruangan -->
                             <button class="btn btn-warning btn-xs" data-toggle="modal" data-target="#send-diantar-{{ $data->id }}">
@@ -261,5 +287,98 @@
     </div>
 </div>
 @endforeach
+@foreach($laundry as $data)
+<div id="print-area-{{ $data->id }}" style="display: none;">
+  <div style="font-family: monospace; font-size: 12px; width: 58mm; text-align: left;">
+    <center><strong>BON LAUNDRY</strong></center>
+    <hr>
+    <table style="width: 100%; font-size: 12px;">
+      <tr><td>Nama Pasien</td><td>: {{ $data->pasien->nama }}</td></tr>
+      <tr><td>Nomor MR</td><td>: {{ $data->nomr }}</td></tr>
+      <tr><td>Ruangan</td><td>: {{ $data->ruangan->nama ?? '-' }}</td></tr>
+      <tr><td>Kamar</td><td>: {{ $data->pasien->kamar->nomor_kamar ?? '-' }}</td></tr>
+      <tr><td>Tanggal</td><td>: {{ $data->tanggal }}</td></tr>
+      <tr><td>Berat</td><td>: {{ $data->berat }} kg</td></tr>
+      <tr><td>Biaya</td><td>: Rp {{ number_format($data->biaya, 3, ',', '.') }}</td></tr>
+    </table>
+    <hr>
+    <center>Terima kasih telah menggunakan<br>layanan laundry kami.</center>
+  </div>
+</div>
+
+@endforeach
+
+
+
+<script>
+    document.addEventListener('DOMContentLoaded', function () {
+        const checkbox = document.getElementById('show_all');
+        const dateInput = document.getElementById('tanggal');
+
+        checkbox.addEventListener('change', function () {
+            if (this.checked) {
+                dateInput.setAttribute('disabled', 'disabled');
+            } else {
+                dateInput.removeAttribute('disabled');
+            }
+        });
+    });
+</script>
+<script>
+    function printBon(divId) {
+        const printContents = document.getElementById(divId).innerHTML;
+        const printWindow = window.open('', '', 'height=400,width=300');
+
+        printWindow.document.write('<html><head><title>Cetak Bon</title>');
+        printWindow.document.write(`
+            <style>
+                @media print {
+                     body {
+                font-family: monospace;
+                font-size: 12px;
+                width: 58mm;
+                margin: 0;
+                padding: 0;
+                text-align: center;
+            }
+            pre {
+                white-space: pre-wrap;
+                text-align: center;
+                font-family: monospace;
+            }
+                    .bon-container {
+                        padding: 10px;
+                        width: 100%;
+                    }
+                    h4 {
+                        text-align: center;
+                        margin-bottom: 10px;
+                        font-size: 14px;
+                        font-weight: bold;
+                    }
+                    p {
+                        margin: 0 0 4px 0;
+                        line-height: 1.2;
+                    }
+                    hr {
+                        border: none;
+                        border-top: 1px dashed #000;
+                        margin: 8px 0;
+                    }
+                }
+            </style>
+        `);
+        printWindow.document.write('</head><body>');
+        printWindow.document.write('<div class="bon-container">' + printContents + '</div>');
+        printWindow.document.write('</body></html>');
+
+        printWindow.document.close();
+        printWindow.focus();
+
+        printWindow.print();
+        printWindow.close();
+    }
+</script>
+
 
 @endsection

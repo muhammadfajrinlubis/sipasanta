@@ -55,22 +55,24 @@
         <div class="widget stats-widget">
             <div class="widget-body d-flex align-items-center">
                 <div>
-                    <h3 class="widget-title text-info">Rekap Petugas</h3>
+
+                   <h3 class="widget-title text-info">{{ $total_pengaduan_selesai }} Pengaduan Selesai</h3>
                     <small>Total Pengaduan Selesai</small>
+
                 </div>
                 <i class="fa zmdi zmdi-assignment-check zmdi-hc-lg ml-auto text-info"></i>
             </div>
         </div>
     </div>
-    <!-- Total Pengaduan by Status -->
+    <!-- Total Pengaduan Ditolak -->
     <div class="col-md-3 col-sm-6 mb-3">
         <div class="widget stats-widget">
             <div class="widget-body d-flex align-items-center">
                 <div>
-                    <h3 class="widget-title text-warning">Status Pengaduan</h3>
-                    <small>Status Overview</small>
+                    <h3 class="widget-title text-danger">{{ $total_pengaduan_ditolak }} Pengaduan Ditolak</h3>
+                    <small>Status Ditolak</small>
                 </div>
-                <i class="fa zmdi zmdi-palette zmdi-hc-lg ml-auto text-warning"></i>
+                <i class="fa zmdi zmdi-close zmdi-hc-lg ml-auto text-danger"></i>
             </div>
         </div>
     </div>
@@ -149,6 +151,8 @@
     </div>
 </div>
 
+
+
 <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
 <script src="https://cdn.jsdelivr.net/npm/echarts/dist/echarts.min.js"></script>
 
@@ -215,6 +219,33 @@
     });
 </script>
 
+@elseif (in_array(Auth::user()->level, [5]))
+<div class="row">
+    <!-- Total Laundry -->
+    <div class="col-md-3 col-sm-6 mb-3">
+        <div class="widget stats-widget">
+            <div class="widget-body d-flex align-items-center">
+                <div>
+                    <h3 class="widget-title text-danger">{{ $totalLaundry }} Laundry</h3>
+                    <small>Total Pengajuan Laundry</small>
+                </div>
+                <i class="fa zmdi zmdi-washing-machine zmdi-hc-lg ml-auto text-danger"></i>
+            </div>
+        </div>
+    </div>
 
+  <div class="col-md-3 col-sm-6 mb-3">
+    <div class="widget stats-widget">
+        <div class="widget-body d-flex align-items-center">
+            <div>
+                <h3 class="widget-title text-success">
+                    Rp {{ number_format($totalPendapatan, 3, ',', '.', ) }}
+                </h3>
+                <small>Total Pendapatan Laundry</small>
+            </div>
+            <i class="fa zmdi zmdi-money zmdi-hc-lg ml-auto text-success"></i>
+        </div>
+    </div>
+</div>
 @endif
 @endsection

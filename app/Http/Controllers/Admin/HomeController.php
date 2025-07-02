@@ -2,11 +2,12 @@
 
 namespace App\Http\Controllers\Admin;
 
-use App\Http\Controllers\Controller;
+use App\Models\Laundry;
 use Illuminate\Http\Request;
-use Illuminate\Support\Facades\Hash;
-use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\DB;
+use App\Http\Controllers\Controller;
+use Illuminate\Support\Facades\Auth;
+use Illuminate\Support\Facades\Hash;
 
 class HomeController extends Controller
 {
@@ -87,16 +88,27 @@ class HomeController extends Controller
                 ->groupBy('status')
                 ->pluck('jumlah', 'status');
         }
+        $total_pengaduan_selesai = DB::table('pengaduan')->where('status', 'selesai')->count();
+        $total_pengaduan_ditolak = DB::table('pengaduan')->where('status', 'ditolak')->count();
 
-        return view('admin.dashboard.index', compact(
-            'pengaduan_per_bulan',
-            'laundry',
-            'total_pengaduan',
-            'selectedYear',
-            'availableYears',
-            'pengaduan_by_status',
-            'rekap_petugas'
-        ));
+        $totalLaundry = Laundry::count();
+
+        // Total pendapatan dari semua laundry (biaya)
+        $totalPendapatan = Laundry::sum('biaya');
+
+       return view('admin.dashboard.index', compact(
+        'pengaduan_per_bulan',
+        'laundry',
+        'totalLaundry', // ✅ tambahkan ini
+        'total_pengaduan',
+        'selectedYear',
+        'availableYears',
+        'pengaduan_by_status',
+        'rekap_petugas',
+        'total_pengaduan_selesai',
+        'total_pengaduan_ditolak',
+        'totalPendapatan'
+    ));
     }
 
 

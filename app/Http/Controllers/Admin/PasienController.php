@@ -10,6 +10,7 @@ use App\Models\Ruangan;
 use App\Models\PanicLog;
 use Illuminate\Http\Request;
 use App\Models\LaundryRequest;
+use App\Events\LaundryRequested;
 use Illuminate\Support\Facades\DB;
 use App\Http\Controllers\Controller;
 use SimpleSoftwareIO\QrCode\Facades\QrCode;
@@ -154,40 +155,41 @@ class PasienController extends Controller
     }
 
         public function updateStatus(Request $request, $id)
-{
-    $pasien = DB::table('pasien')->where('id', $id)->first();
-    $statusBaru = $request->input('status');
+    {
+        $pasien = DB::table('pasien')->where('id', $id)->first();
+        $statusBaru = $request->input('status');
 
-    if (!in_array($statusBaru, ['rawat', 'pulang'])) {
-        return redirect()->back()->with('error', 'Status tidak valid.');
-    }
-
-    if ($statusBaru === 'rawat') {
-        $kamarTerisi = DB::table('pasien')
-            ->where('kamar_id', $pasien->kamar_id)
-            ->where('status', 'rawat')
-            ->where('id', '!=', $pasien->id)
-            ->exists();
-
-        if ($kamarTerisi) {
-            return redirect()->back()->with('error', 'Kamar sudah ditempati pasien lain yang sedang dirawat. Silakan pindahkan pasien ke kamar lain terlebih dahulu.');
+        if (!in_array($statusBaru, ['rawat', 'pulang'])) {
+            return redirect()->back()->with('error', 'Status tidak valid.');
         }
+
+        if ($statusBaru === 'rawat') {
+            $kamarTerisi = DB::table('pasien')
+                ->where('kamar_id', $pasien->kamar_id)
+                ->where('status', 'rawat')
+                ->where('id', '!=', $pasien->id)
+                ->exists();
+
+            if ($kamarTerisi) {
+                return redirect()->back()->with('error', 'Kamar sudah ditempati pasien lain yang sedang dirawat. Silakan pindahkan pasien ke kamar lain terlebih dahulu.');
+            }
+        }
+
+        DB::table('pasien')
+            ->where('id', $id)
+            ->update(['status' => $statusBaru]);
+
+        return redirect('/admin/pasien')->with('success', 'Status pasien berhasil diubah menjadi ' . $statusBaru . '.');
     }
 
-    DB::table('pasien')
-        ->where('id', $id)
-        ->update(['status' => $statusBaru]);
-
-    return redirect('/admin/pasien')->with('success', 'Status pasien berhasil diubah menjadi ' . $statusBaru . '.');
-}
 
 
+    public function delete($id)
+    {
+        $pasien = Pasien::findOrFail($id); // otomatis 404 jika tidak ketemu
+        $pasien->delete();
 
-    public function delete($id){
-        $pasien = DB::table('pasien')->where('id',$id)->first();
-        DB::table('pasien')->where('id',$id)->delete();
-
-        return redirect('admin/pasien')->with("error","Data Berhasil Hapus !");
+        return redirect('admin/pasien')->with("success", "Data berhasil dihapus!");
     }
 
     public function detail($id)
@@ -209,24 +211,28 @@ class PasienController extends Controller
     }
 
     public function laundryRequest(Request $request)
-    {
-        $request->validate([
-            'id_pasien'    => 'required|exists:pasien,id', // Ganti dari id_user
-            'id_ruangan'   => 'required|exists:ruangan,id',
-            'nomr'         => 'required|string',
+{
+    $request->validate([
+        'id_pasien'  => 'required|exists:pasien,id',
+        'id_ruangan' => 'required|exists:ruangan,id',
+        'nomr'       => 'required|string',
+    ]);
 
-        ]);
+    $laundry = Laundry::create([
+        'tanggal'     => now()->toDateString(),
+        'id_pasien'   => $request->id_pasien,
+        'id_ruangan'  => $request->id_ruangan,
+        'nomr'        => $request->nomr,
+        'keterangan'  => 0,
+    ]);
 
-        Laundry::create([
-            'tanggal'      => now()->toDateString(),
-            'id_pasien'    => $request->id_pasien, // Ganti dari id_user
-            'id_ruangan'   => $request->id_ruangan,
-            'nomr'         => $request->nomr,
-            'keterangan'   => 0, // Set langsung ke 0
-        ]);
+    $laundry->load('ruangan');
 
-        return redirect()->back()->with('success', 'Permintaan laundry berhasil dikirim.');
-    }
+
+    event(new LaundryRequested($laundry));
+
+    return redirect()->back()->with('success', 'Permintaan laundry berhasil dikirim.');
+}
 
     public function panicButton(Request $request)
     {

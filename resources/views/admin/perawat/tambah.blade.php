@@ -51,21 +51,21 @@
                   <div class="col-md-6">
                      <div class="form-group">
                         <label>NIP Perawat<span class="text-danger">* </span></label>
-                        <input type="number" name="nip" autofocus class="form-control" placeholder="Masukkan NIP perawat ....." required>
+                        <input type="number" name="nip" autofocus class="form-control" placeholder="Masukkan NIP Perawat ....." required>
                      </div>
                   </div>
 
                   <div class="col-md-6">
                     <div class="form-group">
                        <label>No HP Perawat <span class="text-danger">* </span></label>
-                       <input type="number" name="no_hp" autofocus class="form-control" placeholder="Masukkan NO HP perawat ....." required>
+                       <input type="number" name="no_hp" autofocus class="form-control" placeholder="Masukkan NO HP Perawat ....." required>
                     </div>
                  </div>
 
                   <div class="col-md-6">
                      <div class="form-group">
                         <label>Nama Perawat<span class="text-danger">* </span></label>
-                        <input type="text" name="nama" autofocus class="form-control" placeholder="Masukkan Nama perawat ....." required>
+                        <input type="text" name="nama" autofocus class="form-control" placeholder="Masukkan Nama Perawat ....." required>
                      </div>
                   </div>
                   <div class="col-md-6">
@@ -82,7 +82,7 @@
                   <div class="col-md-6">
                      <div class="form-group">
                         <label>Foto</label>
-                        <input type="file" name="foto" autofocus class="form-control" placeholder="Masukkan Foto perawat .....">
+                        <input type="file" name="foto" autofocus class="form-control" placeholder="Masukkan Foto Perawat .....">
                      </div>
                   </div>
                </div>

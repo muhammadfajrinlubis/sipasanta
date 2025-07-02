@@ -29,6 +29,28 @@
                         <i class="fa fa-upload"></i> Import Data
                     </button>
                 </div>
+                        {{-- FILTER TANGGAL DAN OPSI TAMPIL --}}
+                <div class="row mb-3">
+                    <div class="col-md-12">
+                        <form method="GET" action="/admin/laundry" class="form-inline">
+                            <label for="tanggal" class="mr-2">Filter Tanggal:</label>
+                            <input type="date" id="tanggal" name="tanggal" class="form-control mr-2"
+                                value="{{ old('tanggal', request('tanggal', $selectedDate ?? '') ) }}"
+                                {{ request()->has('show_all') ? 'disabled' : '' }}>
+
+                            <button type="submit" class="btn btn-primary btn-sm mr-2">Tampilkan</button>
+                            <a href="/admin/laundry" class="btn btn-secondary btn-sm mr-3">Reset</a>
+
+                            {{-- Opsi tampil semua --}}
+                            <div class="form-check form-check-inline">
+                                <input class="form-check-input" type="checkbox" name="show_all" id="show_all" value="1"
+                                    {{ request()->has('show_all') ? 'checked' : '' }}
+                                    onchange="this.form.submit()">
+                                <label class="form-check-label" for="show_all">Tampilkan Semua Data</label>
+                            </div>
+                        </form>
+                    </div>
+                </div>
             </header>
             <hr class="widget-separator">
             <div class="widget-body">

@@ -2,8 +2,10 @@
 
 namespace App\Http\Controllers\Admin;
 
+use Carbon\Carbon;
 use App\Models\Laundry;
 use Illuminate\Http\Request;
+use App\Events\LaundryDikirim;
 use Illuminate\Support\Facades\DB;
 use App\Http\Controllers\Controller;
 
@@ -13,40 +15,54 @@ class LaundryController extends Controller
     {
         $this->middleware('auth');
     }
-    public function read()
+    public function read(Request $request)
     {
-        $laundry = Laundry::with(['pasien.kamar', 'ruangan']) // tambahkan pasien.kamar
-            ->orderBy('id', 'DESC')
-            ->orderBy('tanggal', 'DESC')
-            ->get();
+        // Ambil tanggal dari request, default hari ini jika tidak ada
+        $tanggal = $request->input('tanggal', Carbon::today()->toDateString());
 
-        return view('admin.laundry.index', ['laundry' => $laundry]);
+        // Buat query awal
+        $query = Laundry::with(['pasien.kamar', 'ruangan'])->orderByDesc('id');
+
+        // Jika checkbox show_all TIDAK dicentang, filter berdasarkan tanggal
+        if (!$request->has('show_all')) {
+            $query->whereDate('tanggal', $tanggal);
+        }
+
+        // Eksekusi query
+        $laundry = $query->get();
+
+        // Kirim data ke view
+        return view('admin.laundry.index', [
+            'laundry' => $laundry,
+            'selectedDate' => $tanggal,
+            'showAll' => $request->has('show_all')
+        ]);
     }
 
-    public function kirim($id)
-{
-    // Check if the user has admin level 2 access
-    if (auth()->user()->level != 2) {
-        return redirect()->back()->with('error', 'Anda tidak memiliki izin untuk mengirim data ke petugas.');
+   public function kirim($id)
+    {
+        if (auth()->user()->level != 2) {
+            return redirect()->back()->with('error', 'Anda tidak memiliki izin untuk mengirim data ke petugas.');
+        }
+
+        // Eloquent: Ambil laundry beserta relasi ruangan
+        $laundry = \App\Models\Laundry::with('ruangan')->find($id);
+
+        if (!$laundry) {
+            return redirect()->back()->with('error', 'Data Laundry tidak ditemukan.');
+        }
+
+        if ($laundry->keterangan != 0) {
+            return redirect()->back()->with('error', 'Data laundry sudah dikirim atau sedang diproses.');
+        }
+
+        $laundry->keterangan = 1;
+        $laundry->save();
+
+        // Kirim notifikasi event realtime
+        event(new LaundryDikirim($laundry));
+
+        return redirect('/admin/laundry')->with('success', 'Data laundry berhasil dikirim.');
     }
-
-    // Retrieve the laundry data
-    $laundry = DB::table('laundry')->where('id', $id)->first();
-
-    // Check if the laundry data exists
-    if (!$laundry) {
-        return redirect()->back()->with('error', 'Data Laundry tidak ditemukan.');
-    }
-
-    // Check if 'keterangan' is not 0 (already sent or processed)
-    if ($laundry->keterangan != 0) {
-        return redirect()->back()->with('error', 'Data laundry sudah dikirim atau sedang diproses, tidak dapat diubah lagi.');
-    }
-
-    // Update the 'keterangan' status to 1, indicating it is being processed
-    DB::table('laundry')->where('id', $id)->update(['keterangan' => '1']); // '1' = Sedang Dikerjakan Oleh Petugas
-
-    return redirect('/admin/laundry')->with('success', 'Data laundry berhasil dikirim.');
-}
 
 }
