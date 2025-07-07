@@ -1,6 +1,7 @@
 <?php
 namespace App\Models;
 
+use App\Models\PanicLogHistory;
 use Illuminate\Database\Eloquent\Model;
 
 class PanicLog extends Model
@@ -13,4 +14,8 @@ class PanicLog extends Model
     {
     return $this->hasMany(Kamar::class);
     }
+    public function histories()
+{
+    return $this->hasMany(PanicLogHistory::class);
+}
 }

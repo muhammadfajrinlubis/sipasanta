@@ -211,48 +211,65 @@ class PasienController extends Controller
     }
 
     public function laundryRequest(Request $request)
-{
-    $request->validate([
-        'id_pasien'  => 'required|exists:pasien,id',
-        'id_ruangan' => 'required|exists:ruangan,id',
-        'nomr'       => 'required|string',
-    ]);
+    {
+        $request->validate([
+            'id_pasien'  => 'required|exists:pasien,id',
+            'id_ruangan' => 'required|exists:ruangan,id',
+            'nomr'       => 'required|string',
+        ]);
 
-    $laundry = Laundry::create([
-        'tanggal'     => now()->toDateString(),
-        'id_pasien'   => $request->id_pasien,
-        'id_ruangan'  => $request->id_ruangan,
-        'nomr'        => $request->nomr,
-        'keterangan'  => 0,
-    ]);
+        $laundry = Laundry::create([
+            'tanggal'     => now()->toDateString(),
+            'id_pasien'   => $request->id_pasien,
+            'id_ruangan'  => $request->id_ruangan,
+            'nomr'        => $request->nomr,
+            'keterangan'  => 0,
+        ]);
 
-    $laundry->load('ruangan');
+        $laundry->load('ruangan');
 
 
-    event(new LaundryRequested($laundry));
+        event(new LaundryRequested($laundry));
 
-    return redirect()->back()->with('success', 'Permintaan laundry berhasil dikirim.');
-}
+        return redirect()->back()->with('success', 'Permintaan laundry berhasil dikirim.');
+    }
 
     public function panicButton(Request $request)
     {
-        $tanggal = $request->input('tanggal', now()->toDateString());
+        // Ambil input dari form
+        $tanggal = $request->input('tanggal');
+        $showAll = $request->has('show_all'); // Cek apakah checkbox di-check
 
-        $pasien = Pasien::with(['ruangan', 'kamar.panicLogs' => function ($query) use ($tanggal) {
-            if ($tanggal) {
-                $query->whereDate('created_at', $tanggal);
-            }
-        }])
+        // Jika tidak ada tanggal dan show_all tidak aktif, set default ke hari ini
+        if (!$tanggal && !$showAll) {
+            $tanggal = now()->toDateString();
+        }
 
-        ->whereHas('kamar.panicLogs', function ($query) use ($tanggal) {
-            if ($tanggal) {
-                $query->whereDate('created_at', $tanggal);
+        // Query data pasien + relasi panicLogs yang difilter jika perlu
+        $pasien = Pasien::with([
+            'ruangan',
+            'kamar.panicLogs' => function ($query) use ($tanggal, $showAll) {
+                if (!$showAll && $tanggal) {
+                    $query->whereDate('created_at', $tanggal);
+                }
             }
+        ])
+        ->when(!$showAll && $tanggal, function ($query) use ($tanggal) {
+            // Jika filter tanggal aktif
+            return $query->whereHas('kamar.panicLogs', function ($q) use ($tanggal) {
+                $q->whereDate('created_at', $tanggal);
+            });
+        }, function ($query) {
+            // Kalau show_all aktif, ambil semua pasien yang punya panicLogs
+            return $query->whereHas('kamar.panicLogs');
         })
         ->get();
 
-        return view('admin.pasien.panic-button', compact('pasien', 'tanggal'));
+        // Kirim juga nilai showAll ke view agar bisa digunakan kembali
+        return view('admin.pasien.panic-button', compact('pasien', 'tanggal', 'showAll'));
     }
+
+
 
 
     public function getQrData($id)
@@ -281,21 +298,37 @@ class PasienController extends Controller
     $panicLog = PanicLog::findOrFail($id);
 
     $updated = 0;
+    $newStatus = null;
 
     // Cek status saat ini, lalu update yang sesuai
     if ($panicLog->status === 'belum_ditangani') {
+        $newStatus = $request->status;
         $updated = PanicLog::where('kamar_id', $panicLog->kamar_id)
             ->where('status', 'belum_ditangani')
-            ->update(['status' => $request->status]);
+            ->update(['status' => $newStatus]);
     } elseif ($panicLog->status === 'diproses') {
+        $newStatus = 'selesai';
         $updated = PanicLog::where('kamar_id', $panicLog->kamar_id)
             ->where('status', 'diproses')
-            ->update(['status' => 'selesai']);
+            ->update(['status' => $newStatus]);
     }
 
-    // Cek apakah ada data yang berhasil diupdate
-    if ($updated > 0) {
-        return redirect()->back()->with('success', 'Status panic log berhasil diperbarui.');
+    if ($updated > 0 && $newStatus !== null) {
+        // Simpan riwayat status ke panic_log_histories untuk semua panic_log yang diupdate
+        $updatedPanicLogs = PanicLog::where('kamar_id', $panicLog->kamar_id)
+            ->where('status', $newStatus)
+            ->get();
+
+        foreach ($updatedPanicLogs as $log) {
+            DB::table('panic_log_histories')->insert([
+                'panic_log_id' => $log->id,
+                'status' => $newStatus,
+                'changed_at' => now(),
+                'changed_by' => auth()->id(), // bisa null jika guest
+            ]);
+        }
+
+        return redirect()->back()->with('success', 'Status panic log berhasil diperbarui dan riwayat dicatat.');
     } else {
         return redirect()->back()->with('error', 'Tidak ada data yang berhasil diperbarui.');
     }

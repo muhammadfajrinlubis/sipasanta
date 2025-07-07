@@ -128,8 +128,8 @@
                             <i class="fa fa-check" data-toggle="tooltip" data-placement="top" title="Selesai"></i>
                             </button>
                             <button class="btn btn-success btn-xs" onclick="printBon('print-area-{{ $data->id }}')">
-    <i class="fa fa-print" data-toggle="tooltip" data-placement="top" title="Cetak Bon"></i>
-</button>
+                                <i class="fa fa-print" data-toggle="tooltip" data-placement="top" title="Cetak Bon"></i>
+                            </button>
 
                             @elseif ($data->keterangan == '4')
                         <!-- Tombol Diantar ke Ruangan -->
