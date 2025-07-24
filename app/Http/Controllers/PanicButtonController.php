@@ -57,51 +57,64 @@ class PanicButtonController extends Controller
         return view('layouts.show', compact('ruangan', 'pasiens', 'panicLogs'));
     }
 
+ public function store(Request $request)
+    {
+        $nomorKamar = $request->input('nomor_kamar');
 
+        // Cari kamar berdasarkan nomor kamar
+        $kamar = Kamar::with('ruangan')->where('nomor_kamar', $nomorKamar)->first();
 
-public function store(Request $request)
-{
-    $nomorKamar = $request->input('nomor_kamar');
+        if (!$kamar) {
+            return response()->json(['message' => 'Kamar tidak ditemukan'], 404);
+        }
 
-    // Cari kamar
-    $kamar = Kamar::with('ruangan')->where('nomor_kamar', $nomorKamar)->first();
+        // Cari pasien yang sedang dirawat (status = 'rawat') di kamar tersebut
+        $pasien = Pasien::with('kamar.ruangan')
+            ->where('kamar_id', $kamar->id)
+            ->where('status', 'rawat')
+            ->first();
 
-    if (!$kamar) {
-        return response()->json(['message' => 'Kamar tidak ditemukan'], 404);
+        // Jika tidak ada pasien yang sedang dirawat
+        if (!$pasien) {
+            return response()->json([
+                'message' => 'Tidak ada pasien yang sedang dirawat di kamar ini'
+            ], 200);
+        }
+
+        // Cek apakah sudah ada panic log aktif untuk kamar ini
+        $existingLog = PanicLog::where('kamar_id', $kamar->id)
+            ->where('status', 'alarm_aktif')
+            ->latest()
+            ->first();
+
+        // Jika sudah ada panic log aktif, tidak perlu simpan lagi
+        if ($existingLog) {
+            return response()->json(['message' => 'Panic log sudah aktif untuk kamar ini'], 200);
+        }
+
+        // Simpan panic log baru karena ada pasien yang sedang dirawat
+        $panicLog = PanicLog::create([
+            'kamar_id' => $kamar->id,
+            'pasien_id' => $pasien->id,
+            'status' => 'alarm_aktif',
+        ]);
+
+        // Kirim event broadcast ke sistem real-time
+        broadcast(new PanicLogCreated($pasien))->toOthers();
+
+        return response()->json([
+            'message' => 'Panic log berhasil disimpan',
+            'data' => [
+                'pasien' => $pasien,
+                'kamar' => $kamar,
+                'ruangan' => $kamar->ruangan,
+                'status' => $panicLog->status,
+                'created_at' => Carbon::parse($panicLog->created_at)
+                    ->timezone('Asia/Jakarta')->format('Y-m-d H:i:s'),
+            ]
+        ]);
     }
 
-    // Cek apakah ada pasien dengan status 'rawat' di kamar tersebut
-    $pasien = Pasien::with('kamar.ruangan')
-        ->where('kamar_id', $kamar->id)
-        ->where('status', 'rawat')
-        ->first();
-
-    if (!$pasien) {
-        return response()->json(['message' => 'Tidak ada pasien dirawat di kamar ini'], 200);
-        // 200 agar ESP tidak dianggap error, tapi tidak simpan data
-    }
-
-    // Simpan panic log baru karena ada pasien yang dirawat
-    $panicLog = PanicLog::create([
-        'kamar_id' => $kamar->id,
-        'status' => 'alarm_aktif',
-    ]);
-
-    // Broadcast event
-    broadcast(new PanicLogCreated($pasien))->toOthers();
-
-    return response()->json([
-        'message' => 'Panic log berhasil disimpan',
-        'data' => [
-            'pasien' => $pasien,
-            'kamar' => $kamar,
-            'ruangan' => $kamar->ruangan,
-            'status' => $panicLog->status,
-            'created_at' => Carbon::parse($panicLog->created_at)
-                ->timezone('Asia/Jakarta')->format('Y-m-d H:i:s'),
-        ]
-    ]);
-}
 
     public function updateStatus(Request $request)
 {
@@ -125,26 +138,30 @@ public function store(Request $request)
 
 
 
-
 public function getPending()
-    {
-        $panicLogs = DB::table('panic_logs')
-            ->join('kamar', 'panic_logs.kamar_id', '=', 'kamar.id')
-            ->leftJoin('ruangan', 'kamar.ruangan_id', '=', 'ruangan.id')
-            ->leftJoin('pasien', 'pasien.kamar_id', '=', 'kamar.id') // sesuaikan jika relasi pasien ≠ 1:1
-            ->where('panic_logs.status', 'alarm_aktif')
-            ->select(
-                'panic_logs.*',
-                'kamar.nomor_kamar',
-                'kamar.id as kamar_id',
-                'ruangan.nama as nama_ruangan',
-                'pasien.nama as pasien_nama',
-                'pasien.kendala as pasien_kendala'
-            )
-            ->get();
+{
+    $panicLogs = DB::table('panic_logs')
+        ->join('kamar', 'panic_logs.kamar_id', '=', 'kamar.id')
+        ->leftJoin('ruangan', 'kamar.ruangan_id', '=', 'ruangan.id')
+        ->leftJoin('pasien', function ($join) {
+            $join->on('pasien.kamar_id', '=', 'kamar.id')
+                 ->where('pasien.status', '=', 'rawat');
+        })
+        ->where('panic_logs.status', 'alarm_aktif')
+        ->select(
+            'panic_logs.*',
+            'kamar.nomor_kamar',
+            'kamar.id as kamar_id',
+            'ruangan.nama as nama_ruangan',
+            'pasien.id as pasien_id',
+            'pasien.nama as pasien_nama',
+            'pasien.kendala as pasien_kendala'
+        )
+        ->get();
 
-        return response()->json(['data' => $panicLogs]);
-    }
+    return response()->json(['data' => $panicLogs]);
+}
+
 
 public function dismiss($kamar_id)
     {

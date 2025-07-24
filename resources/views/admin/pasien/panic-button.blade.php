@@ -180,16 +180,15 @@
                                                     @if($panicLogs->isEmpty())
                                                         <p>Tidak ada riwayat status.</p>
                                                     @else
-                                                        @php $count = 1; @endphp
+                                                       @php $count = 1; @endphp
                                                         @foreach($panicLogs->sortByDesc('created_at') as $log)
                                                             <div class="mb-3 border p-3">
                                                                 <h5 class="mb-2">
-                                                                    Panggilan ke-{{ $count }}
+                                                                    {{ $count === 1 ? 'Panggilan Terbaru' : 'Panggilan ke-' . ($count - 1) }}
                                                                     <small class="text-muted">({{ $log->created_at->format('d-m-Y H:i:s') }})</small>
                                                                 </h5>
 
                                                                 @php
-                                                                    // Status awal saat panic button ditekan
                                                                     $histories = collect([
                                                                         (object)[
                                                                             'status' => 'alarm_aktif',
@@ -198,7 +197,6 @@
                                                                         ]
                                                                     ]);
 
-                                                                    // Gabungkan dengan histori lainnya
                                                                     foreach ($log->histories as $history) {
                                                                         $histories->push($history);
                                                                     }
@@ -217,14 +215,12 @@
                                                                         </tr>
                                                                     </thead>
                                                                     <tbody>
-                                                                        <!-- Tampilkan 1 paling baru -->
                                                                         <tr>
                                                                             <td>{{ ucfirst(str_replace('_', ' ', $first->status)) }}</td>
                                                                             <td>{{ \Carbon\Carbon::parse($first->changed_at)->format('d-m-Y H:i:s') }}</td>
                                                                             <td>{{ $first->changedBy->name ?? '-' }}</td>
                                                                         </tr>
 
-                                                                        <!-- Sisanya bisa toggle -->
                                                                         <tbody id="historyGroup{{ $log->id }}" style="display: none;">
                                                                             @foreach($rest as $history)
                                                                                 <tr>
@@ -245,7 +241,7 @@
                                                             </div>
                                                             @php $count++; @endphp
                                                         @endforeach
-                                                    @endif
+                                                        @endif
                                                     </div>
                                                     <div class="modal-footer">
                                                         <button type="button" class="btn btn-secondary" data-dismiss="modal">Tutup</button>

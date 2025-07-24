@@ -14,6 +14,7 @@ class Kamar extends Model
     protected $fillable = [
         'ruangan_id',
         'nomor_kamar',
+        'pasien_id'
     ];
 
     // Relasi ke tabel ruangan
