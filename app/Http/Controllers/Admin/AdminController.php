@@ -26,14 +26,22 @@ class AdminController extends Controller
     }
 
     public function create(Request $request){
-        DB::table('users')->insert([
-            'name'=>$request->nama,
-            'username'=>$request->nip,
-            'level'=>'2',
-            'password'=> bcrypt('Admin2024')
-            ]);
+    // Cek apakah NIP sudah ada di tabel users
+        $existingUser = DB::table('users')->where('username', $request->nip)->first();
 
-        $users= DB::table('users')->orderBy('id','DESC')->first();
+        if($existingUser){
+            return redirect('/admin/admin')->with("error", "NIP $request->nip sudah terdaftar!");
+        }
+
+        // Jika belum ada, lanjut insert
+        DB::table('users')->insert([
+            'name' => $request->nama,
+            'username' => $request->nip,
+            'level' => '2',
+            'password' => bcrypt('Admin2024')
+        ]);
+
+        $users = DB::table('users')->orderBy('id','DESC')->first();
 
         $dokumen = $request->file('foto');
         if ($request->hasFile('foto')) {
@@ -46,18 +54,21 @@ class AdminController extends Controller
                 'id_jabatan' => $request->id_jabatan,
                 'no_hp' => $request->no_hp,
                 'id_user' => $users->id,
-                'foto' => $name]);
+                'foto' => $name
+            ]);
         } else {
             DB::table('admin')->insert([
                 'nama' => $request->nama,
                 'nip' => $request->nip,
                 'no_hp' => $request->no_hp,
                 'id_jabatan' => $request->id_jabatan,
-                'id_user' => $users->id]);
+                'id_user' => $users->id
+            ]);
         }
 
         return redirect('/admin/admin')->with("success","Data Berhasil Ditambah !");
     }
+
 
     public function edit($id){
         $admin= DB::table('admin')->where('id',$id)->first();

@@ -95,7 +95,7 @@ class KamarController extends Controller
         // Hanya hapus data dari tabel kamar, tanpa mempengaruhi tabel lain
         DB::table('kamar')->where('id', $id)->delete();
 
-        return redirect('/admin/kamar')->with('success', 'Data kamar berhasil dihapus!');
+        return redirect('/admin/kamar')->with('error', 'Data kamar berhasil dihapus!');
     }
 
 

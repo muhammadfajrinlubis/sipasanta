@@ -105,14 +105,15 @@
                     </div>
 
                     <div class="form-group">
-                        <label for="ruangan_id">Ruangan<span class="text-danger">* </span></label>
-                        <select class="form-control" id="ruangan_id" name="ruangan_id" required>
+                        <label for="ruangan_id">Ruangan <span class="text-danger">*</span></label>
+                        <select class="form-control select2" id="ruangan_id" name="ruangan_id" required>
                             <option value="">-- Pilih Ruangan --</option>
                             @foreach($ruangan as $r)
                                 <option value="{{ $r->id }}">{{ $r->nama }}</option>
                             @endforeach
                         </select>
                     </div>
+
 
                     <div class="form-group">
                         <label for="kamar_id">Kamar<span class="text-danger">* </span></label>

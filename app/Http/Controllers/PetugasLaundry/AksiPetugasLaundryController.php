@@ -20,8 +20,10 @@ class AksiPetugasLaundryController extends Controller
         // Ambil tanggal dari request, default hari ini jika tidak ada
         $tanggal = $request->input('tanggal', Carbon::today()->toDateString());
 
-        // Buat query awal
-        $query = Laundry::with(['pasien.kamar', 'ruangan'])->orderByDesc('id');
+        // Buat query awal: hanya laundry yang sudah disetujui admin
+        $query = Laundry::with(['pasien.kamar', 'ruangan'])
+            ->where('keterangan', '>', 0) // hanya yang disetujui (status > 0)
+            ->orderByDesc('id');
 
         // Jika checkbox show_all TIDAK dicentang, filter berdasarkan tanggal
         if (!$request->has('show_all')) {
@@ -38,6 +40,7 @@ class AksiPetugasLaundryController extends Controller
             'showAll' => $request->has('show_all')
         ]);
     }
+
 
     public function jemput($id)
     {

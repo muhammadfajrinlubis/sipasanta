@@ -25,9 +25,9 @@
                     </h4>
                 </div>
                 <div class="pull-right">
-                    <button class="btn btn-dark btn-sm" data-toggle="modal" data-target="#import">
+                    {{-- <button class="btn btn-dark btn-sm" data-toggle="modal" data-target="#import">
                         <i class="fa fa-upload"></i> Import Data
-                    </button>
+                    </button> --}}
                 </div>
                         {{-- FILTER TANGGAL DAN OPSI TAMPIL --}}
                 <div class="row mb-3">

@@ -124,7 +124,7 @@ class PasienController extends Controller
         'status'        => $request->status,
     ]);
 
-    return redirect('/admin/pasien')->with('success', 'Data pasien berhasil disimpan.');
+    return redirect('/admin/pasien')->with('success', 'Data Pasien Berhasil Disimpan.');
 }
     public function edit($id)
     {
@@ -151,7 +151,7 @@ class PasienController extends Controller
         $pasien = Pasien::findOrFail($id);
         $pasien->update($request->all());
 
-        return redirect('/admin/pasien')->with('success', 'Data pasien berhasil diupdate.');
+        return redirect('/admin/pasien')->with('success', 'Data Pasien Berhasil Diupdate.');
     }
 
         public function updateStatus(Request $request, $id)
@@ -171,7 +171,7 @@ class PasienController extends Controller
                 ->exists();
 
             if ($kamarTerisi) {
-                return redirect()->back()->with('error', 'Kamar sudah ditempati pasien lain yang sedang dirawat. Silakan pindahkan pasien ke kamar lain terlebih dahulu.');
+                return redirect()->back()->with('error', 'Kamar Sudah Ditempati Pasien Lain Yang Sedang Dirawat. Silakan Pindahkan Pasien Ke Kamar Lain Terlebih Dahulu.');
             }
         }
 
@@ -179,7 +179,7 @@ class PasienController extends Controller
             ->where('id', $id)
             ->update(['status' => $statusBaru]);
 
-        return redirect('/admin/pasien')->with('success', 'Status pasien berhasil diubah menjadi ' . $statusBaru . '.');
+        return redirect('/admin/pasien')->with('success', 'Status Pasien Berhasil Diubah Menjadi ' . $statusBaru . '.');
     }
 
 
@@ -189,7 +189,7 @@ class PasienController extends Controller
         $pasien = Pasien::findOrFail($id); // otomatis 404 jika tidak ketemu
         $pasien->delete();
 
-        return redirect('admin/pasien')->with("success", "Data berhasil dihapus!");
+        return redirect('admin/pasien')->with("error", "Data Berhasil Dihapus!");
     }
 
     public function detail($id)

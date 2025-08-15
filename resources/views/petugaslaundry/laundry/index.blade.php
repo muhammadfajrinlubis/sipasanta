@@ -126,10 +126,7 @@
                             @elseif ($data->keterangan == '3')
                             <button class="btn btn-primary btn-xs" data-toggle="modal" data-target="#send-selesai-{{ $data->id }}">
                             <i class="fa fa-check" data-toggle="tooltip" data-placement="top" title="Selesai"></i>
-                            </button>
-                            <button class="btn btn-success btn-xs" onclick="printBon('print-area-{{ $data->id }}')">
-                                <i class="fa fa-print" data-toggle="tooltip" data-placement="top" title="Cetak Bon"></i>
-                            </button>
+
 
                             @elseif ($data->keterangan == '4')
                         <!-- Tombol Diantar ke Ruangan -->
@@ -138,6 +135,12 @@
                             </button>
                             @else
                             -
+                            @endif
+                          {{-- Tombol Cetak Bon muncul jika keterangan 3 atau 4 --}}
+                            @if(in_array($data->keterangan, ['3', '4','5']))
+                                <button class="btn btn-success btn-xs" onclick="printBon('print-area-{{ $data->id }}')">
+                                    <i class="fa fa-print" data-toggle="tooltip" data-placement="top" title="Cetak Bon"></i>
+                                </button>
                             @endif
 
                         </td>
@@ -156,7 +159,7 @@
     <div class="modal-dialog" role="document">
         <div class="modal-content">
             <div class="modal-body">
-                <h2 class="text-center">Apakah Anda Telah Menjemput Laundryan ?</h2>
+                <h2 class="text-center">Apakah Anda Telah Menjemput Laundry ?</h2>
                 <hr>
                 <div class="form-group">
                     <label>Nama Pasien</label>
@@ -243,7 +246,7 @@
     <div class="modal-dialog" role="document">
         <div class="modal-content">
             <div class="modal-body">
-                <h2 class="text-center">Apakah Anda Telah Menyelesaikan Laundryan ?</h2>
+                <h2 class="text-center">Apakah Anda Telah Menyelesaikan Laundry ?</h2>
                 <hr>
                 <div class="form-group">
                     <label>Nama Pasien</label>
@@ -268,7 +271,7 @@
     <div class="modal-dialog" role="document">
         <div class="modal-content">
             <div class="modal-body">
-                <h2 class="text-center">Apakah Anda Telah Mengantar Laundryan ke Ruangan ?</h2>
+                <h2 class="text-center">Apakah Anda Telah Mengantar Laundry ke Ruangan ?</h2>
                 <hr>
                 <div class="form-group">
                     <label>Nama Pasien</label>

@@ -29,15 +29,22 @@ class PegawaiController extends Controller
     }
 
     public function create(Request $request){
+        // Cek apakah NIP sudah ada di tabel users
+        $existingUser = DB::table('users')->where('username', $request->nip)->first();
+
+        if($existingUser){
+            return redirect('/admin/pegawai')->with("error", "NIP $request->nip sudah terdaftar!");
+        }
+
+        // Jika belum ada, lanjut insert
         DB::table('users')->insert([
-            'name'=>$request->nama,
-            'username'=>$request->nip,
+            'name' => $request->nama,
+            'username' => $request->nip,
+            'level' => '4',
+            'password' => bcrypt('Admin2024')
+        ]);
 
-            'level'=>'4',
-            'password'=> bcrypt('Admin2024')
-            ]);
-
-        $users= DB::table('users')->orderBy('id','DESC')->first();
+        $users = DB::table('users')->orderBy('id','DESC')->first();
 
         $dokumen = $request->file('foto');
         if ($request->hasFile('foto')) {
@@ -50,18 +57,21 @@ class PegawaiController extends Controller
                 'no_hp' => $request->no_hp,
                 'id_jabatan' => $request->id_jabatan,
                 'id_user' => $users->id,
-                'foto' => $name]);
+                'foto' => $name
+            ]);
         } else {
             DB::table('pegawai')->insert([
                 'nama' => $request->nama,
                 'nip' => $request->nip,
                 'no_hp' => $request->no_hp,
                 'id_jabatan' => $request->id_jabatan,
-                'id_user' => $users->id]);
+                'id_user' => $users->id
+            ]);
         }
 
         return redirect('/admin/pegawai')->with("success","Data Berhasil Ditambah !");
     }
+
 
     public function edit($id){
         $pegawai= DB::table('pegawai')->where('id',$id)->first();
@@ -124,8 +134,6 @@ class PegawaiController extends Controller
         // Redirect ke halaman admin/pegawai dengan pesan sukses
         return redirect('/admin/pegawai')->with('success', 'Data Berhasil Diupdate!');
     }
-
-
 
     public function delete($id)
     {

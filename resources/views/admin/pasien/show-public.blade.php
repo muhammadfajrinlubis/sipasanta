@@ -150,6 +150,7 @@
                         <tr><th>No. Telepon</th><td>{{ $pasien->no_telepon ?? '-' }}</td></tr>
                         <tr><th>Ruangan</th><td>{{ $pasien->ruangan->nama ?? '-' }}</td></tr>
                         <tr><th>Kamar</th><td>{{ $pasien->kamar->nomor_kamar ?? '-' }}</td></tr>
+                        <tr><th>Kendala</th><td>{{ $pasien->kendala ?? '-' }}</td></tr>
                         <tr><th>Status</th><td>
                             @if ($pasien->status == 'rawat')
                                 <span class="badge bg-warning text-dark">Dirawat</span>

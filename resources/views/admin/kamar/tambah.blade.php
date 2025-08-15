@@ -69,14 +69,15 @@
                     <div class="col-md-12">
                         <div class="form-group">
                             <label for="ruangan_id">Pilih Ruangan <span class="text-danger">*</span></label>
-                            <select name="ruangan_id" id="ruangan_id" class="form-control" required>
-                                <option value="">-- Pilih Ruangan --</option>
-                                @foreach ($ruangans as $ruangan)
-                                    <option value="{{ $ruangan->id }}" {{ old('ruangan_id') == $ruangan->id ? 'selected' : '' }}>
-                                        {{ $ruangan->nama }}
-                                    </option>
-                                @endforeach
-                            </select>
+                            <select name="ruangan_id" id="ruangan_id" class="form-control select2" required>
+                            <option value="">-- Pilih Ruangan --</option>
+                            @foreach ($ruangans as $ruangan)
+                                <option value="{{ $ruangan->id }}" {{ old('ruangan_id') == $ruangan->id ? 'selected' : '' }}>
+                                    {{ $ruangan->nama }}
+                                </option>
+                            @endforeach
+                        </select>
+
                         </div>
                     </div>
 

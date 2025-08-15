@@ -8,7 +8,7 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=0, minimal-ui">
     <meta name="description" content="Admin, Dashboard, Bootstrap" />
     <link rel="shortcut icon" sizes="196x196" href="favicon.ico">
-    
+
     <link rel="stylesheet" href="{{url('assets-admin')}}/libs/bower/font-awesome/css/font-awesome.min.css">
     <link rel="stylesheet" href="{{url('assets-admin')}}/libs/bower/material-design-iconic-font/dist/css/material-design-iconic-font.min.css">
     <link rel="stylesheet" href="{{url('assets-admin')}}/libs/bower/animate.css/animate.min.css">
@@ -41,7 +41,7 @@
         <div class="simple-page-logo animated swing">
             <a href="index.html">
                 <span><i class="fa fa-gg"></i></span>
-                <span>SI PASAN</span>
+                <span>SiLAPAN</span>
             </a>
         </div><!-- logo -->
         <div class="simple-page-form animated flipInY" id="login-form">
@@ -95,7 +95,7 @@
     <script>
         window.setTimeout(function() {
             $(".alert").fadeTo(500, 0).slideUp(500, function(){
-                $(this).remove(); 
+                $(this).remove();
             });
         }, 3000);
     </script>

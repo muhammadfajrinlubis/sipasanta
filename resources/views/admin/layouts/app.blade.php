@@ -352,20 +352,17 @@ document.addEventListener('DOMContentLoaded', function () {
     $userLevel = auth()->check() ? auth()->user()->level : null;
 @endphp
 
-@if(in_array($userLevel, [ 2]))
+{{-- Token CSRF untuk semua level --}}
+<meta name="csrf-token" content="{{ csrf_token() }}">
+
+{{-- Load JS sesuai level --}}
+@if ($userLevel == 2)
     <script src="{{ asset('js/admin-notifications.js') }}"></script>
     <script src="{{ asset('js/laundry.js') }}"></script>
-    <meta name="csrf-token" content="{{ csrf_token() }}">
-@endif
-
-@if(in_array($userLevel, [3 ]))
+@elseif ($userLevel == 3)
     <script src="{{ asset('js/petugas-notifications.js') }}"></script>
-    <meta name="csrf-token" content="{{ csrf_token() }}">
-@endif
-
-@if(in_array($userLevel, [5]))
+@elseif ($userLevel == 5)
     <script src="{{ asset('js/petugas-laundry.js') }}"></script>
-    <meta name="csrf-token" content="{{ csrf_token() }}">
 @endif
 
 
@@ -410,7 +407,7 @@ document.addEventListener('DOMContentLoaded', function () {
     </button>
     <a href="/admin/home" class="navbar-brand">
       <span class="brand-icon"><i class="fa fa-gg"></i></span>
-      <span class="brand-name">SI PASAN</span>
+      <span class="brand-name">SiLAPAN</span>
     </a>
   </div><!-- .navbar-header -->
 
@@ -423,7 +420,9 @@ document.addEventListener('DOMContentLoaded', function () {
           </a>
         </li>
         <li>
-          <h5 class="page-title hidden-menubar-top hidden-float">Sistem Informasi Pengaduan RSUD</h5>
+          <h5 class="page-title hidden-menubar-top hidden-float" style="font-size: 14px;">
+            Sistem Layanan Non-Medis Berbasis IoT untuk Panic Button, Pengaduan Fasilitas, dan Layanan Laundry Pasien
+        </h5>
         </li>
       </ul>
 
@@ -447,14 +446,12 @@ document.addEventListener('DOMContentLoaded', function () {
                     0
                 </span>
             </a>
-
             <!-- Pastikan class-nya adalah 'dropdown-menu dropdown-laundry' -->
             <div class="dropdown-menu media-group dropdown-menu-right animated flipInY dropdown-laundry"
                 aria-labelledby="notifLaundry" style="width: 300px;">
                 <!-- Notifikasi akan di-insert di sini oleh JavaScript -->
             </div>
         </li>
-
          @elseif(Auth::user()->level == 3)
         <li class="nav-item dropdown">
             <a href="javascript:void(0)"
@@ -475,7 +472,7 @@ document.addEventListener('DOMContentLoaded', function () {
         </li>
         @elseif(Auth::user()->level == 5)
         <li class="nav-item dropdown">
-    <a class="nav-link" id="notifLaundry" data-toggle="dropdown" href="#" role="button" aria-haspopup="true" aria-expanded="false">
+        <a class="nav-link" id="notifLaundry" data-toggle="dropdown" href="#" role="button" aria-haspopup="true" aria-expanded="false">
         <i class="zmdi zmdi-notifications"></i>
         <span class="badge badge-pill badge-danger notification-count-laundry" style="display: none;"></span>
     </a>

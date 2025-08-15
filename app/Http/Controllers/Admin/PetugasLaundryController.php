@@ -24,15 +24,22 @@ class PetugasLaundryController extends Controller
     }
 
     public function create(Request $request){
+        // Cek apakah NIP sudah ada di tabel users
+        $existingUser = DB::table('users')->where('username', $request->nip)->first();
+
+        if($existingUser){
+            return redirect('/admin/petugaslaundry')->with("error", "NIP $request->nip sudah terdaftar!");
+        }
+
+        // Jika belum ada, lanjut insert
         DB::table('users')->insert([
-            'name'=>$request->nama,
-            'username'=>$request->nip,
+            'name' => $request->nama,
+            'username' => $request->nip,
+            'level' => '5',
+            'password' => bcrypt('Admin2024')
+        ]);
 
-            'level'=>'5',
-            'password'=> bcrypt('Admin2024')
-            ]);
-
-        $users= DB::table('users')->orderBy('id','DESC')->first();
+        $users = DB::table('users')->orderBy('id','DESC')->first();
 
         $dokumen = $request->file('foto');
         if ($request->hasFile('foto')) {
@@ -45,18 +52,21 @@ class PetugasLaundryController extends Controller
                 'no_hp' => $request->no_hp,
                 'id_jabatan' => $request->id_jabatan,
                 'id_user' => $users->id,
-                'foto' => $name]);
+                'foto' => $name
+            ]);
         } else {
             DB::table('petugaslaundry')->insert([
                 'nama' => $request->nama,
                 'nip' => $request->nip,
                 'no_hp' => $request->no_hp,
                 'id_jabatan' => $request->id_jabatan,
-                'id_user' => $users->id]);
+                'id_user' => $users->id
+            ]);
         }
 
         return redirect('/admin/petugaslaundry')->with("success","Data Berhasil Ditambah !");
     }
+
 
     public function edit($id){
         $petugaslaundry= DB::table('petugaslaundry')->where('id',$id)->first();

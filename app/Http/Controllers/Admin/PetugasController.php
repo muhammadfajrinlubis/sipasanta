@@ -25,14 +25,22 @@ class PetugasController extends Controller
     }
 
     public function create(Request $request){
-        DB::table('users')->insert([
-            'name'=>$request->nama,
-            'username'=>$request->nip,
-            'level'=>'3',
-            'password'=> bcrypt('Admin2024')
-            ]);
+        // Cek apakah NIP sudah ada di tabel users
+        $existingUser = DB::table('users')->where('username', $request->nip)->first();
 
-        $users= DB::table('users')->orderBy('id','DESC')->first();
+        if($existingUser){
+            return redirect('/admin/petugas')->with("error", "NIP $request->nip sudah terdaftar!");
+        }
+
+        // Jika belum ada, lanjut insert
+        DB::table('users')->insert([
+            'name' => $request->nama,
+            'username' => $request->nip,
+            'level' => '3',
+            'password' => bcrypt('Admin2024')
+        ]);
+
+        $users = DB::table('users')->orderBy('id','DESC')->first();
 
         $dokumen = $request->file('foto');
         if ($request->hasFile('foto')) {
@@ -45,18 +53,21 @@ class PetugasController extends Controller
                 'id_jabatan' => $request->id_jabatan,
                 'no_hp' => $request->no_hp,
                 'id_user' => $users->id,
-                'foto' => $name]);
+                'foto' => $name
+            ]);
         } else {
             DB::table('petugas')->insert([
                 'nama' => $request->nama,
                 'nip' => $request->nip,
                 'id_jabatan' => $request->id_jabatan,
                 'no_hp' => $request->no_hp,
-                'id_user' => $users->id]);
+                'id_user' => $users->id
+            ]);
         }
 
         return redirect('/admin/petugas')->with("success","Data Berhasil Ditambah !");
     }
+
 
     public function edit($id){
         $petugas= DB::table('petugas')->where('id',$id)->first();

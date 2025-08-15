@@ -44,6 +44,10 @@
                             <td>{{ $pasien->jenis_kelamin }}</td>
                         </tr>
                         <tr>
+                            <th>Kendala</th>
+                            <td>{{ $pasien->kendala }}</td>
+                        </tr>
+                        <tr>
                             <th>Alamat</th>
                             <td>{{ $pasien->alamat }}</td>
                         </tr>

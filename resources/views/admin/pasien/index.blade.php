@@ -81,7 +81,7 @@
                                     <td class="align-middle-custom">{{ $data->alamat }}</td>
                                     <td class="align-middle-custom">{{ $data->no_telepon }}</td>
                                     <td class="align-middle-custom">{{ $data->ruangan->nama ?? '-' }}</td>
-                                    <td class="align-middle-custom">{{ $data->kamar->nomor_kamar ?? '-' }}</td>
+                                    <td class="align-middle-custom text-center">{{ $data->kamar->nomor_kamar ?? '-' }}</td>
                                     <td class="align-middle-custom">
                                         {{ $data->status == 'rawat' ? 'Di Rawat' : ($data->status == 'pulang' ? 'Di Pulangkan' : '-') }}
                                     </td>
