@@ -159,7 +159,7 @@
     <div class="modal-dialog" role="document">
         <div class="modal-content">
             <div class="modal-body">
-                <h2 class="text-center">Apakah Anda Telah Menjemput Laundry ?</h2>
+                <h2 class="text-center">Apakah Anda Telah Menjemput Laundry?</h2>
                 <hr>
                 <div class="form-group">
                     <label>Nama Pasien</label>
@@ -246,7 +246,7 @@
     <div class="modal-dialog" role="document">
         <div class="modal-content">
             <div class="modal-body">
-                <h2 class="text-center">Apakah Anda Telah Menyelesaikan Laundry ?</h2>
+                <h2 class="text-center">Apakah Anda Telah Menyelesaikan Laundry?</h2>
                 <hr>
                 <div class="form-group">
                     <label>Nama Pasien</label>
@@ -271,7 +271,7 @@
     <div class="modal-dialog" role="document">
         <div class="modal-content">
             <div class="modal-body">
-                <h2 class="text-center">Apakah Anda Telah Mengantar Laundry ke Ruangan ?</h2>
+                <h2 class="text-center">Apakah Anda Telah Mengantar Laundry ke Ruangan?</h2>
                 <hr>
                 <div class="form-group">
                     <label>Nama Pasien</label>
