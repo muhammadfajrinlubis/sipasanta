@@ -148,7 +148,7 @@
                         <tr><th>Tanggal Lahir</th><td>{{ $pasien->tanggal_lahir ? \Carbon\Carbon::parse($pasien->tanggal_lahir)->format('d M Y') : '-' }}</td></tr>
                         <tr><th>Alamat</th><td>{{ $pasien->alamat ?? '-' }}</td></tr>
                         <tr><th>No. Telepon</th><td>{{ $pasien->no_telepon ?? '-' }}</td></tr>
-                        <tr><th>Ruangan</th><td>{{ $pasien->ruangan->nama ?? '-' }}</td></tr>
+                        <tr><th>Ruangan</th><td>{{ $pasien->kamar->ruangan->nama ?? '-' }}</td></tr>
                         <tr><th>Kamar</th><td>{{ $pasien->kamar->nomor_kamar ?? '-' }}</td></tr>
                         <tr><th>Kendala</th><td>{{ $pasien->kendala ?? '-' }}</td></tr>
                         <tr><th>Status</th><td>
@@ -191,9 +191,7 @@
     <div class="modal-dialog">
         <form action="{{ route('pasien.laundryRequest') }}" method="POST">
             @csrf
-            <input type="hidden" name="id_pasien" value="{{ $pasien->id }}">
-            <input type="hidden" name="id_ruangan" value="{{ $pasien->ruangan->id ?? '' }}">
-            <input type="hidden" name="nomr" value="{{ $pasien->no_rm }}">
+            <input type="hidden" name="pasien_id" value="{{ $pasien->id }}">
 
             <div class="modal-content">
                 <div class="modal-header bg-success text-white">
@@ -201,10 +199,10 @@
                     <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
                 </div>
                 <div class="modal-body">
-                    <ul class="list-group">
+                    <ul class="list-group mb-3">
                         <li class="list-group-item"><strong>No. RM:</strong> {{ $pasien->no_rm }}</li>
                         <li class="list-group-item"><strong>Nama:</strong> {{ $pasien->nama }}</li>
-                        <li class="list-group-item"><strong>Ruangan:</strong> {{ $pasien->ruangan->nama ?? '-' }}</li>
+                        <li class="list-group-item"><strong>Ruangan:</strong> {{ $pasien->kamar->ruangan->nama ?? '-' }}</li>
                         <li class="list-group-item"><strong>Kamar:</strong> {{ $pasien->kamar->nomor_kamar ?? '-' }}</li>
                     </ul>
                 </div>

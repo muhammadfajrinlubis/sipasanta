@@ -89,11 +89,12 @@
                             <td class="align-middle-custom">{{ $data->tanggal }}</td>
                             <td class="align-middle-custom">{{ $data->pasien->nama ?? 'Pasien telah dihapus' }}</td>
                             <td class="align-middle-custom">{{ $data->nomr }}</td>
-                            <td class="align-middle-custom">
-                                @if($data->ruangan && $data->ruangan->nama)
-                                    {{ $data->ruangan->nama }}
+                           <td class="align-middle-custom">
+                                {{-- Ambil ruangan melalui pasien -> kamar -> ruangan --}}
+                                @if($data->pasien && $data->pasien->kamar && $data->pasien->kamar->ruangan)
+                                    {{ $data->pasien->kamar->ruangan->nama }}
                                 @else
-                                    <span class="text-danger">Data ruangan telah dihapus</span>
+                                    <span class="text-danger">Data ruangan tidak tersedia</span>
                                 @endif
                             </td>
                             <td class="align-middle-custom">{{ $data->pasien->kamar->nomor_kamar ?? '-' }}</td>

@@ -13,7 +13,7 @@ class Laundry extends Model
 
     protected $fillable = [
         'tanggal',
-        'id_pasien',
+        'pasien_id',
         'id_ruangan',
         'nomr',
         'berat',
@@ -25,7 +25,7 @@ class Laundry extends Model
     // Relasi opsional jika Anda butuh
     public function pasien()
     {
-        return $this->belongsTo(Pasien::class, 'id_pasien');
+        return $this->belongsTo(Pasien::class, 'pasien_id');
     }
 
     public function ruangan()

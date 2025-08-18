@@ -82,15 +82,17 @@
                     </div>
 
                     <div class="form-group">
-                        <label for="ruangan_id">Ruangan</label>
-                        <select class="form-control" id="ruangan_id" name="ruangan_id" required>
-                            <option value="">-- Pilih Ruangan --</option>
-                            @foreach($ruangan as $r)
-                                <option value="{{ $r->id }}" {{ $pasien->ruangan_id == $r->id ? 'selected' : '' }}>{{ $r->nama }}</option>
-                            @endforeach
-                        </select>
-                    </div>
-
+                    <label for="ruangan_id">Ruangan</label>
+                    <select class="form-control" id="ruangan_id" name="ruangan_id" required>
+                        <option value="">-- Pilih Ruangan --</option>
+                        @foreach($ruangan as $r)
+                            <option value="{{ $r->id }}"
+                                {{ optional($pasien->kamar)->ruangan_id == $r->id ? 'selected' : '' }}>
+                                {{ $r->nama }}
+                            </option>
+                        @endforeach
+                    </select>
+                </div>
                     <div class="form-group">
                         <label for="kamar_id">Kamar</label>
                         <select class="form-control" id="kamar_id" name="kamar_id" required>

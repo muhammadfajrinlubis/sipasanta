@@ -35,7 +35,7 @@ class LaundryRequested implements ShouldBroadcast
             'id'            => $this->laundry->id,
             'nomr'          => $this->laundry->nomr,
             'tanggal'       => $this->laundry->tanggal,
-            'ruangan' => optional($this->laundry->ruangan)->nama ?? 'Tidak diketahui',
+            'ruangan' => optional($this->laundry->pasien->kamar->ruangan)->nama ?? 'Tidak diketahui',
         ];
 
     }

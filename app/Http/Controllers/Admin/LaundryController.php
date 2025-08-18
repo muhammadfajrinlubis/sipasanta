@@ -20,8 +20,8 @@ class LaundryController extends Controller
         // Ambil tanggal dari request, default hari ini jika tidak ada
         $tanggal = $request->input('tanggal', Carbon::today()->toDateString());
 
-        // Buat query awal
-        $query = Laundry::with(['pasien.kamar', 'ruangan'])->orderByDesc('id');
+        // Buat query awal dengan relasi pasien dan kamar -> ruangan
+        $query = Laundry::with(['pasien.kamar.ruangan'])->orderByDesc('id');
 
         // Jika checkbox show_all TIDAK dicentang, filter berdasarkan tanggal
         if (!$request->has('show_all')) {

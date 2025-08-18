@@ -69,7 +69,7 @@
                         </tr>
                         <tr>
                             <th>Ruangan</th>
-                            <td>{{ $pasien->ruangan->nama }}</td>
+                            <td>{{ $pasien->kamar->ruangan->nama ?? '_' }}</td>
                         </tr>
                         <tr>
                             <th>Kamar</th>

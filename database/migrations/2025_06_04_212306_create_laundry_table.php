@@ -1,6 +1,5 @@
 <?php
 
-use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Schema;
 use Illuminate\Database\Schema\Blueprint;
 use Illuminate\Database\Migrations\Migration;
@@ -9,49 +8,42 @@ return new class extends Migration
 {
     /**
      * Run the migrations.
-     *
-     * @return void
      */
-    public function up()
+    public function up(): void
     {
         Schema::create('laundry', function (Blueprint $table) {
             $table->id();
 
-            // Kolom untuk tanggal
+            // Tanggal permintaan laundry
             $table->date('tanggal');
 
-            // Foreign keys
-            $table->unsignedBigInteger('id_pasien'); // Ganti dari id_user
-            $table->unsignedBigInteger('id_ruangan');
+            // Foreign key ke pasien
+            $table->unsignedBigInteger('pasien_id');
 
-            // Kolom lainnya
-            $table->string('nomr');
+            // Kolom lain
+            $table->string('nomr'); // nomor rekam medis pasien
             $table->float('berat')->nullable();
             $table->decimal('biaya', 10, 3)->nullable();
             $table->text('keterangan')->nullable();
-             $table->timestamp('siap_pada')->nullable();
+            $table->timestamp('siap_pada')->nullable();
 
-            // Timestamps
-            $table->timestamp('created_at')->useCurrent();
-            $table->timestamp('updated_at')->default(DB::raw('CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP'))->nullable();
+            // Timestamps otomatis
+            $table->timestamps();
 
-            // Menambahkan relasi
-            $table->foreign('id_pasien')->references('id')->on('pasien')->onDelete('cascade'); // ke tabel pasien
-            $table->foreign('id_ruangan')->references('id')->on('ruangan')->onDelete('cascade');
-
+            // Relasi
+            $table->foreign('pasien_id')
+                ->references('id')->on('pasien')
+                ->onDelete('cascade');
         });
     }
 
     /**
      * Reverse the migrations.
-     *
-     * @return void
      */
-    public function down()
+    public function down(): void
     {
         Schema::table('laundry', function (Blueprint $table) {
-            $table->dropForeign(['id_pasien']);
-            $table->dropForeign(['id_ruangan']);
+            $table->dropForeign(['pasien_id']);
         });
 
         Schema::dropIfExists('laundry');

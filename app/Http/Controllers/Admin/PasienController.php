@@ -20,12 +20,13 @@ class PasienController extends Controller
 
      public function read()
     {
-        $pasien = Pasien::with(['ruangan', 'kamar'])
+        $pasien = Pasien::with(['kamar.ruangan'])
             ->orderBy('created_at', 'desc')
             ->get();
 
         return view('admin.pasien.index', compact('pasien'));
     }
+
 
     public function add()
     {
@@ -81,7 +82,6 @@ class PasienController extends Controller
         'tanggal_lahir' => 'required|date',
         'alamat'        => 'required|string',
         'no_telepon'    => 'required|string|max:15',
-        'ruangan_id'    => 'required|exists:ruangan,id',
         'kamar_id'      => 'required|exists:kamar,id',
         'status'        => 'required|in:rawat,pulang',
     ]);
@@ -118,7 +118,6 @@ class PasienController extends Controller
         'tanggal_lahir' => $request->tanggal_lahir,
         'alamat'        => $request->alamat,
         'no_telepon'    => $request->no_telepon,
-        'ruangan_id'    => $request->ruangan_id,
         'kamar_id'      => $request->kamar_id,
         'kendala'       => $request->kendala,
         'status'        => $request->status,
@@ -135,24 +134,34 @@ class PasienController extends Controller
     }
 
     public function update(Request $request, $id)
-    {
-        $request->validate([
-            'no_rm' => 'required|numeric',
-            'nama' => 'required|string|max:255',
-            'jenis_kelamin' => 'required|in:L,P',
-            'tanggal_lahir' => 'required|date',
-            'alamat' => 'required|string',
-            'no_telepon' => 'required|numeric',
-            'ruangan_id' => 'required|exists:ruangan,id',
-            'kamar_id' => 'required|exists:kamar,id',
-            'status' => 'required|in:rawat,pulang',
-        ]);
+{
+    $request->validate([
+        // no_rm unik, tapi tidak usah dipaksa di update kalau memang otomatis
+        'nama' => 'required|string|max:255',
+        'jenis_kelamin' => 'required|in:L,P',
+        'tanggal_lahir' => 'required|date',
+        'alamat' => 'required|string',
+        'no_telepon' => 'nullable|string|max:15',
+        'kamar_id' => 'required|exists:kamar,id',
+        'kendala' => 'nullable|string',
+        'status' => 'required|in:rawat,pulang',
+    ]);
 
-        $pasien = Pasien::findOrFail($id);
-        $pasien->update($request->all());
+    $pasien = Pasien::findOrFail($id);
 
-        return redirect('/admin/pasien')->with('success', 'Data Pasien Berhasil Diupdate.');
-    }
+    $pasien->update([
+        'nama'          => $request->nama,
+        'jenis_kelamin' => $request->jenis_kelamin,
+        'tanggal_lahir' => $request->tanggal_lahir,
+        'alamat'        => $request->alamat,
+        'no_telepon'    => $request->no_telepon,
+        'kamar_id'      => $request->kamar_id,
+        'kendala'       => $request->kendala,
+        'status'        => $request->status,
+    ]);
+
+    return redirect('/admin/pasien')->with('success', 'Data Pasien berhasil diupdate.');
+}
 
         public function updateStatus(Request $request, $id)
     {
@@ -202,37 +211,44 @@ class PasienController extends Controller
     {
         $pasien = Pasien::findOrFail($id);
 
-            // Ambil riwayat laundry berdasarkan id pasien
-        $riwayatLaundry = Laundry::where('id_pasien', $id)
-            ->orderBy('tanggal', 'DESC')
+        // Ambil riwayat laundry berdasarkan pasien_id
+        $riwayatLaundry = Laundry::where('pasien_id', $id)
+            ->orderBy('tanggal', 'desc')
             ->get();
 
         return view('admin.pasien.show-public', compact('pasien', 'riwayatLaundry'));
     }
 
+
     public function laundryRequest(Request $request)
-    {
-        $request->validate([
-            'id_pasien'  => 'required|exists:pasien,id',
-            'id_ruangan' => 'required|exists:ruangan,id',
-            'nomr'       => 'required|string',
-        ]);
+{
+    // Validasi input
+    $request->validate([
+        'pasien_id' => 'required|exists:pasien,id',
 
-        $laundry = Laundry::create([
-            'tanggal'     => now()->toDateString(),
-            'id_pasien'   => $request->id_pasien,
-            'id_ruangan'  => $request->id_ruangan,
-            'nomr'        => $request->nomr,
-            'keterangan'  => 0,
-        ]);
+    ]);
 
-        $laundry->load('ruangan');
+    // Ambil pasien beserta kamar & ruangan
+    $pasien = Pasien::with('kamar.ruangan')->findOrFail($request->pasien_id);
+
+    // Buat permintaan laundry
+    $laundry = Laundry::create([
+        'tanggal'    => now()->toDateString(),
+        'pasien_id'  => $pasien->id,        // HARUS ADA
+        'nomr'       => $pasien->no_rm,
+        'keterangan' => 0, // bisa kosong
+    ]);
+
+    // Load relasi pasien untuk event
+    $laundry->load('pasien.kamar.ruangan');
+
+    // Trigger event
+    event(new LaundryRequested($laundry));
+
+    return redirect()->back()->with('success', 'Permintaan laundry berhasil dikirim.');
+}
 
 
-        event(new LaundryRequested($laundry));
-
-        return redirect()->back()->with('success', 'Permintaan laundry berhasil dikirim.');
-    }
 
     public function panicButton(Request $request)
     {

@@ -82,12 +82,13 @@
                         <td class="align-middle-custom">{{ $data->pasien->nama }}</td>
                         <td class="align-middle-custom">{{ $data->nomr }}</td>
                         <td class="align-middle-custom">
-                           @if($data->ruangan && $data->ruangan->nama)
-                                    {{ $data->ruangan->nama }}
+                                {{-- Ambil ruangan melalui pasien -> kamar -> ruangan --}}
+                                @if($data->pasien && $data->pasien->kamar && $data->pasien->kamar->ruangan)
+                                    {{ $data->pasien->kamar->ruangan->nama }}
                                 @else
-                                    <span class="text-danger">Data ruangan telah dihapus</span>
+                                    <span class="text-danger">Data ruangan tidak tersedia</span>
                                 @endif
-                        </td>
+                            </td>
                         <td class="align-middle-custom">{{ $data->pasien->kamar->nomor_kamar ?? '-' }}</td>
                         <td class="align-middle-custom">{{ $data->berat }} kg</td>
                         <td class="align-middle-custom">Rp {{ number_format($data->biaya, 3, ',', '.') }}

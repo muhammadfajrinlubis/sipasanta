@@ -226,7 +226,7 @@
         <div class="widget stats-widget">
             <div class="widget-body d-flex align-items-center">
                 <div>
-                    <h3 class="widget-title text-danger">{{ $totalLaundry }} Laundry</h3>
+                    <h3 class="widget-title text-danger">{{ $totalLaundrypetugas }} Laundry</h3>
                     <small>Total Pengajuan Laundry</small>
                 </div>
                 <i class="fa zmdi zmdi-washing-machine zmdi-hc-lg ml-auto text-danger"></i>

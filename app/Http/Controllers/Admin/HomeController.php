@@ -92,6 +92,7 @@ class HomeController extends Controller
         $total_pengaduan_ditolak = DB::table('pengaduan')->where('status', 'ditolak')->count();
 
         $totalLaundry = Laundry::count();
+        $totalLaundrypetugas = Laundry::where('keterangan', '!=', 0)->count();
 
         // Total pendapatan dari semua laundry (biaya)
         $totalPendapatan = Laundry::sum('biaya');
@@ -99,7 +100,8 @@ class HomeController extends Controller
        return view('admin.dashboard.index', compact(
         'pengaduan_per_bulan',
         'laundry',
-        'totalLaundry', // ✅ tambahkan ini
+        'totalLaundry',
+        'totalLaundrypetugas',
         'total_pengaduan',
         'selectedYear',
         'availableYears',
