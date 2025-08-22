@@ -299,7 +299,7 @@
     <table style="width: 100%; font-size: 12px;">
       <tr><td>Nama Pasien</td><td>: {{ $data->pasien->nama }}</td></tr>
       <tr><td>Nomor MR</td><td>: {{ $data->nomr }}</td></tr>
-      <tr><td>Ruangan</td><td>: {{ $data->ruangan->nama ?? '-' }}</td></tr>
+      <tr><td>Ruangan</td><td>: {{ $data->pasien->kamar->ruangan->nama ?? '-' }}</td></tr>
       <tr><td>Kamar</td><td>: {{ $data->pasien->kamar->nomor_kamar ?? '-' }}</td></tr>
       <tr><td>Tanggal</td><td>: {{ $data->tanggal }}</td></tr>
       <tr><td>Berat</td><td>: {{ $data->berat }} kg</td></tr>
